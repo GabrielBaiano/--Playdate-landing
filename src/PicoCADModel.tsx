@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useFrame, useLoader } from '@react-three/fiber';
+import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 
 export function parsePicoCAD(text: string) {
@@ -14,7 +14,7 @@ export function parsePicoCAD(text: string) {
         const rot = rotMatch ? rotMatch[1].split(',').map(Number) : [0,0,0];
         
         const vBlockStart = block.indexOf('v={') + 3;
-        const vBlockEnd = block.indexOf('},', vBlockStart);
+        const vBlockEnd = block.indexOf('f={', vBlockStart);
         if (vBlockStart < 3 || vBlockEnd === -1) continue;
         const vBlock = block.substring(vBlockStart, vBlockEnd);
         
@@ -22,13 +22,12 @@ export function parsePicoCAD(text: string) {
         const vRegex = /{(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)}/g;
         let vM;
         while ((vM = vRegex.exec(vBlock)) !== null) {
-            // PicoCAD space -> Three space (Invert Y and Z typically, or just Y)
+            // PicoCAD space -> Three space
             vertices.push([parseFloat(vM[1]), -parseFloat(vM[2]), -parseFloat(vM[3])]);
         }
         
         const fBlockStart = block.indexOf('f={') + 3;
-        const fBlockEnd = block.indexOf('}', fBlockStart + 3);
-        const fBlock = block.substring(fBlockStart, block.indexOf('}', fBlockEnd));
+        const fBlock = block.substring(fBlockStart);
         
         const positions: number[] = [];
         const uvs: number[] = [];
@@ -98,7 +97,8 @@ varying vec3 vNormal;
 
 void main() {
     vUv = uv;
-    vNormal = normal;
+    // Apply normalMatrix to transform normals correctly into view space
+    vNormal = normalize(normalMatrix * normal);
     
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     vec4 glPos = projectionMatrix * mvPosition;
@@ -123,11 +123,23 @@ void main() {
     vec4 texColor = texture2D(map, vUv);
     if (texColor.a < 0.1) discard; // Alpha cutout
     
-    // Simple directional lighting
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-    float diff = max(dot(vNormal, lightDir), 0.5); // Add ambient
+    // PicoCAD-style directional lighting with pixel dithering
+    // Since vNormal is in view space, vec3(0.0, 0.0, 1.0) points straight out from the camera
+    vec3 lightDir = vec3(0.0, 0.0, 1.0);
+    float ndotl = dot(vNormal, lightDir);
     
-    gl_FragColor = vec4(texColor.rgb * diff, 1.0);
+    // Calculate 2x2 dither checkerboard pattern using screen pixel coordinates
+    float checker = mod(floor(gl_FragCoord.x) + floor(gl_FragCoord.y), 2.0);
+    
+    float shadow = 1.0;
+    // Hard shadow logic + pixelated dither transition
+    if (ndotl < 0.3) {
+        shadow = 0.65; // Solid shadow
+    } else if (ndotl < 0.7) {
+        shadow = checker > 0.5 ? 1.0 : 0.65; // Dithered transition shadow
+    }
+    
+    gl_FragColor = vec4(texColor.rgb * shadow, 1.0);
 }
 `;
 
@@ -147,12 +159,6 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
                 setGeometries(parsePicoCAD(text));
             });
     }, [url, texture]);
-    
-    useFrame((state) => {
-        if (groupRef.current) {
-            groupRef.current.rotation.y = state.clock.elapsedTime * 0.5;
-        }
-    });
 
     const material = new THREE.ShaderMaterial({
         vertexShader,
