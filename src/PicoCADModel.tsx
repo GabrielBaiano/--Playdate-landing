@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLoader } from '@react-three/fiber';
+import { useLoader, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 export function parsePicoCAD(text: string) {
@@ -22,7 +22,6 @@ export function parsePicoCAD(text: string) {
         const vRegex = /{(-?[\d.]+),\s*(-?[\d.]+),\s*(-?[\d.]+)}/g;
         let vM;
         while ((vM = vRegex.exec(vBlock)) !== null) {
-            // PicoCAD space -> Three space
             vertices.push([parseFloat(vM[1]), -parseFloat(vM[2]), -parseFloat(vM[3])]);
         }
         
@@ -78,7 +77,6 @@ export function parsePicoCAD(text: string) {
         
         geometry.computeVertexNormals();
         
-        // Convert rot to radians (PicoCAD is usually degrees)
         const euler = new THREE.Euler(rot[0] * Math.PI / 180, -rot[1] * Math.PI / 180, -rot[2] * Math.PI / 180); 
         const quaternion = new THREE.Quaternion().setFromEuler(euler);
         geometry.applyQuaternion(quaternion);
@@ -97,13 +95,11 @@ varying vec3 vNormal;
 
 void main() {
     vUv = uv;
-    // Apply normalMatrix to transform normals correctly into view space
     vNormal = normalize(normalMatrix * normal);
     
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     vec4 glPos = projectionMatrix * mvPosition;
     
-    // PS1 vertex jitter
     float resolution = 160.0;
     glPos.xyz = glPos.xyz / glPos.w;
     glPos.x = floor(glPos.x * resolution) / resolution;
@@ -121,22 +117,21 @@ varying vec3 vNormal;
 
 void main() {
     vec4 texColor = texture2D(map, vUv);
-    if (texColor.a < 0.1) discard; // Alpha cutout
+    if (texColor.a < 0.1) discard;
     
-    // PicoCAD-style directional lighting with pixel dithering
-    // Since vNormal is in view space, vec3(0.0, 0.0, 1.0) points straight out from the camera
-    vec3 lightDir = vec3(0.0, 0.0, 1.0);
-    float ndotl = dot(vNormal, lightDir);
+    vec3 normal = vNormal;
+    if (!gl_FrontFacing) normal = -normal;
     
-    // Calculate 2x2 dither checkerboard pattern using screen pixel coordinates
+    vec3 lightDir = normalize(vec3(-0.5, 0.5, 1.0));
+    float ndotl = dot(normal, lightDir);
+    
     float checker = mod(floor(gl_FragCoord.x) + floor(gl_FragCoord.y), 2.0);
     
     float shadow = 1.0;
-    // Hard shadow logic + pixelated dither transition
-    if (ndotl < 0.3) {
-        shadow = 0.65; // Solid shadow
-    } else if (ndotl < 0.7) {
-        shadow = checker > 0.5 ? 1.0 : 0.65; // Dithered transition shadow
+    if (ndotl < 0.1) {
+        shadow = 0.65;
+    } else if (ndotl < 0.5) {
+        shadow = checker > 0.5 ? 1.0 : 0.65;
     }
     
     gl_FragColor = vec4(texColor.rgb * shadow, 1.0);
@@ -153,12 +148,32 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
         texture.minFilter = THREE.NearestFilter;
         texture.colorSpace = THREE.SRGBColorSpace;
         
+        // Setup initial intro spin
+        if (groupRef.current) {
+            groupRef.current.rotation.y = -Math.PI / 2 + Math.PI * 6; // 3 full spins starting from target
+            groupRef.current.rotation.x = 0;
+            groupRef.current.scale.set(0.001, 0.001, 0.001); // Start tiny for Mario 64 zoom
+        }
+        
         fetch(url)
             .then(res => res.text())
             .then(text => {
                 setGeometries(parsePicoCAD(text));
             });
     }, [url, texture]);
+
+    useFrame((state, delta) => {
+        if (groupRef.current) {
+            // Mario 64 intro spin effect - smoothly settles to perfect front (-90 degrees)
+            groupRef.current.rotation.y = THREE.MathUtils.damp(groupRef.current.rotation.y, -Math.PI / 2, 3.5, delta);
+            groupRef.current.rotation.x = THREE.MathUtils.damp(groupRef.current.rotation.x, 0, 3.5, delta);
+            
+            // Mario 64 Zoom/Grow effect
+            const currentScale = groupRef.current.scale.x;
+            const newScale = THREE.MathUtils.damp(currentScale, scale, 3.5, delta);
+            groupRef.current.scale.set(newScale, newScale, newScale);
+        }
+    });
 
     const material = new THREE.ShaderMaterial({
         vertexShader,
@@ -171,7 +186,7 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
     });
 
     return (
-        <group ref={groupRef} {...props} scale={[scale, scale, scale]}>
+        <group ref={groupRef} {...props}>
             {geometries.map((geo, i) => (
                 <mesh key={i} geometry={geo} material={material} />
             ))}

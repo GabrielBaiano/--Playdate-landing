@@ -28,10 +28,10 @@ function App() {
             >
               <ambientLight intensity={1.0} />
               <pointLight position={[10, 10, 10]} intensity={1.0} />
-              <group position={[0, -7.5, 0]} rotation={[-0.15, -0.4, 0]}>
+              <group position={[0, -7.5, 0]}>
                 <PicoCADModel url="/playdate.txt" textureUrl="/playdate.png" scale={1.3} />
               </group>
-              <OrbitControls enableZoom={false} enablePan={false} autoRotate={false} />
+              <OrbitControls enableZoom={false} enablePan={false} />
             </Canvas>
           </div>
         </div>
