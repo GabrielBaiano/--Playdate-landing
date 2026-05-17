@@ -131,24 +131,25 @@ body::before {
 }
 
 .hero-3d {
-  position: absolute;
+  position: fixed; /* Fixed to the viewport */
   top: 0;
   left: 0;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 0;
+  z-index: 10; /* Now ON TOP of yellow section */
+  pointer-events: none; /* Let clicks pass through */
 }
 
 .canvas-container {
   width: 100%;
   height: 100%;
-  cursor: grab;
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: none; /* Disable mouse interaction to prevent bugs */
 }
 
 .canvas-container::before {
@@ -164,11 +165,81 @@ body::before {
   z-index: -1;
 }
 
-.canvas-container:active {
-  cursor: grabbing;
+
+/* Yellow Scroll Section */
+.yellow-section {
+  position: relative;
+  z-index: 5; /* Behind the 3D model */
+  background-color: #e6b200; /* Darker mustard yellow for contrast against the bright console */
+  width: 100%;
+  height: 250vh; /* Tall enough to allow a long scroll animation */
+  padding: 0;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
 }
 
+.yellow-container {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-end; /* Put content on the right */
+  align-items: center;
+  padding-right: 5rem;
+  z-index: 20; /* Speech bubble on top of 3D model */
+}
 
+/* Speech Bubble styling */
+.speech-bubble {
+  background: white;
+  border: 5px solid black;
+  border-radius: 30px;
+  padding: 3rem;
+  position: relative;
+  box-shadow: 15px 15px 0px rgba(0,0,0,1);
+  max-width: 600px;
+  width: 45%;
+}
+
+/* Speech bubble tail */
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -50px; /* Pointing to the left, where the Playdate is */
+  transform: translateY(-50%);
+  border-width: 25px 50px 25px 0;
+  border-style: solid;
+  border-color: transparent black transparent transparent;
+}
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -38px;
+  transform: translateY(-50%);
+  border-width: 19px 38px 19px 0;
+  border-style: solid;
+  border-color: transparent white transparent transparent;
+}
+
+.speech-title {
+  font-family: 'Inter', var(--font-main);
+  font-size: clamp(2rem, 3vw, 2.5rem);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: black;
+  margin-bottom: 1rem;
+}
+
+.speech-text {
+  font-family: 'Inter', var(--font-main);
+  font-size: clamp(1.2rem, 1.5vw, 1.5rem);
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
 
 /* Responsive */
 @media (max-width: 768px) {

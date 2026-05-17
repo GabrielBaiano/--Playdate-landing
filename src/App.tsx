@@ -17,24 +17,34 @@ function App() {
         </div>
       </nav>
 
-      <main className="hero-section">
-        <div className="hero-3d">
-          <div className="canvas-container">
-            <Canvas 
-              camera={{ position: [0, 0, 45], fov: 35 }} 
-              dpr={0.3} 
-              gl={{ antialias: false }} 
-              style={{ imageRendering: 'pixelated' }}
-            >
-              <ambientLight intensity={1.0} />
-              <pointLight position={[10, 10, 10]} intensity={1.0} />
-              <group position={[0, -5.5, 0]}>
-                <PicoCADModel url="/playdate.txt" textureUrl="/playdate.png" scale={1.22} />
-              </group>
-              <OrbitControls enableZoom={false} enablePan={false} />
-            </Canvas>
+      <main>
+        <section className="hero-section">
+          <div className="hero-3d">
+            <div className="canvas-container">
+              <Canvas 
+                camera={{ position: [0, 0, 45], fov: 35 }} 
+                dpr={0.3} 
+                gl={{ antialias: false }} 
+                style={{ imageRendering: 'pixelated' }}
+              >
+                <ambientLight intensity={1.0} />
+                <pointLight position={[10, 10, 10]} intensity={1.0} />
+                <group position={[0, -5.5, 0]}>
+                  <PicoCADModel url="/playdate.txt" textureUrl="/playdate.png" scale={1.22} />
+                </group>
+              </Canvas>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <section className="yellow-section">
+          <div className="yellow-container">
+            <div className="speech-bubble">
+              <h2 className="speech-title">It's a new, tiny handheld game system.</h2>
+              <p className="speech-text">With a bunch of brand-new games.<br/>We made Playdate just for fun.</p>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );

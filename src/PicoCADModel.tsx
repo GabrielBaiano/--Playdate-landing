@@ -202,20 +202,43 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
     useFrame((state, delta) => {
         if (groupRef.current) {
             const t = state.clock.elapsedTime;
+            const scrollY = window.scrollY;
+            const vh = window.innerHeight;
             
-            // Gyroscopic wobble effect (More intense)
-            const wobbleY = Math.sin(t * 1.4) * 0.30; // wider left/right pan
-            const wobbleX = Math.cos(t * 1.1) * 0.20; // stronger up/down tilt
-            const wobbleZ = Math.sin(t * 1.7) * 0.10; // more noticeable diagonal tilt
+            // Gyroscopic wobble effect
+            const wobbleY = Math.sin(t * 1.4) * 0.30;
+            const wobbleX = Math.cos(t * 1.1) * 0.20;
+            const wobbleZ = Math.sin(t * 1.7) * 0.10;
             
-            // Mario 64 intro spin effect - seamlessly damps into the continuous wobble
-            groupRef.current.rotation.y = THREE.MathUtils.damp(groupRef.current.rotation.y, -Math.PI / 2 + wobbleY, 3.5, delta);
-            groupRef.current.rotation.x = THREE.MathUtils.damp(groupRef.current.rotation.x, wobbleX, 3.5, delta);
-            groupRef.current.rotation.z = THREE.MathUtils.damp(groupRef.current.rotation.z, wobbleZ, 3.5, delta);
+            // Scroll Animation Logic
+            let progress = 0;
+            if (scrollY > vh * 0.4) {
+                progress = Math.min(1, (scrollY - vh * 0.4) / (vh * 0.6));
+            }
             
-            // Mario 64 Zoom/Grow effect
+            // Smooth ease-out cubic curve
+            const ease = 1 - Math.pow(1 - progress, 3);
+            
+            // Position targets: bottom left (less extreme)
+            const targetX = -17 * ease; // more to the left
+            const targetY = -3.5 + (0.5 * ease); // higher up (ends up at -3.0)
+            
+            groupRef.current.position.x = THREE.MathUtils.damp(groupRef.current.position.x, targetX, 4.0, delta);
+            groupRef.current.position.y = THREE.MathUtils.damp(groupRef.current.position.y, targetY, 4.0, delta);
+            
+            // Rotation targets: idle pose showing bottom and crank
+            const targetRotY = -Math.PI / 2 + wobbleY + (ease * Math.PI / 6); // slightly less rotation
+            const targetRotX = wobbleX - (ease * Math.PI / 12); // less backwards tilt
+            const targetRotZ = wobbleZ - (ease * Math.PI / 32); // much less Z tilt
+            
+            groupRef.current.rotation.y = THREE.MathUtils.damp(groupRef.current.rotation.y, targetRotY, 3.5, delta);
+            groupRef.current.rotation.x = THREE.MathUtils.damp(groupRef.current.rotation.x, targetRotX, 3.5, delta);
+            groupRef.current.rotation.z = THREE.MathUtils.damp(groupRef.current.rotation.z, targetRotZ, 3.5, delta);
+            
+            // Scale target: gets smaller
+            const targetScale = scale * (1 - 0.45 * ease); // 45% smaller
             const currentScale = groupRef.current.scale.x;
-            const newScale = THREE.MathUtils.damp(currentScale, scale, 3.5, delta);
+            const newScale = THREE.MathUtils.damp(currentScale, targetScale, 3.5, delta);
             groupRef.current.scale.set(newScale, newScale, newScale);
         }
     });
