@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLoader, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -112,12 +112,29 @@ void main() {
 
 const fragmentShader = `
 uniform sampler2D map;
+uniform sampler2D videoMap;
+uniform vec4 screenBounds;
 varying vec2 vUv;
 varying vec3 vNormal;
 
 void main() {
     vec4 texColor = texture2D(map, vUv);
     if (texColor.a < 0.1) discard;
+    
+    // Replace screen pixels with video (commented out for now)
+    /*
+    if (vUv.x >= screenBounds.x && vUv.x <= screenBounds.z && 
+        vUv.y >= screenBounds.y && vUv.y <= screenBounds.w) {
+        
+        vec2 vidUv = vec2(
+            (vUv.x - screenBounds.x) / (screenBounds.z - screenBounds.x),
+            (vUv.y - screenBounds.y) / (screenBounds.w - screenBounds.y)
+        );
+        
+        vec4 vidColor = texture2D(videoMap, vidUv);
+        texColor = vidColor;
+    }
+    */
     
     vec3 normal = vNormal;
     if (!gl_FrontFacing) normal = -normal;
@@ -143,6 +160,26 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
     const groupRef = useRef<THREE.Group>(null);
     const texture = useLoader(THREE.TextureLoader, textureUrl);
     
+    // Create video element
+    const [video] = useState(() => {
+        const vid = document.createElement("video");
+        vid.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+        vid.crossOrigin = "Anonymous";
+        vid.loop = true;
+        vid.muted = true;
+        vid.play().catch(e => console.error("Video play failed", e));
+        return vid;
+    });
+    
+    // Create video texture
+    const videoTexture = useMemo(() => {
+        const tex = new THREE.VideoTexture(video);
+        tex.minFilter = THREE.NearestFilter;
+        tex.magFilter = THREE.NearestFilter;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        return tex;
+    }, [video]);
+    
     useEffect(() => {
         texture.magFilter = THREE.NearestFilter;
         texture.minFilter = THREE.NearestFilter;
@@ -164,9 +201,17 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
 
     useFrame((state, delta) => {
         if (groupRef.current) {
-            // Mario 64 intro spin effect - smoothly settles to perfect front (-90 degrees)
-            groupRef.current.rotation.y = THREE.MathUtils.damp(groupRef.current.rotation.y, -Math.PI / 2, 3.5, delta);
-            groupRef.current.rotation.x = THREE.MathUtils.damp(groupRef.current.rotation.x, 0, 3.5, delta);
+            const t = state.clock.elapsedTime;
+            
+            // Gyroscopic wobble effect (More intense)
+            const wobbleY = Math.sin(t * 1.4) * 0.30; // wider left/right pan
+            const wobbleX = Math.cos(t * 1.1) * 0.20; // stronger up/down tilt
+            const wobbleZ = Math.sin(t * 1.7) * 0.10; // more noticeable diagonal tilt
+            
+            // Mario 64 intro spin effect - seamlessly damps into the continuous wobble
+            groupRef.current.rotation.y = THREE.MathUtils.damp(groupRef.current.rotation.y, -Math.PI / 2 + wobbleY, 3.5, delta);
+            groupRef.current.rotation.x = THREE.MathUtils.damp(groupRef.current.rotation.x, wobbleX, 3.5, delta);
+            groupRef.current.rotation.z = THREE.MathUtils.damp(groupRef.current.rotation.z, wobbleZ, 3.5, delta);
             
             // Mario 64 Zoom/Grow effect
             const currentScale = groupRef.current.scale.x;
@@ -175,15 +220,19 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
         }
     });
 
-    const material = new THREE.ShaderMaterial({
+    const material = useMemo(() => new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
         uniforms: {
             time: { value: 0 },
-            map: { value: texture }
+            map: { value: texture },
+            videoMap: { value: videoTexture },
+            // Estimating the screen UV bounds on the atlas. You can tweak these!
+            // x: minU, y: minV, z: maxU, w: maxV
+            screenBounds: { value: new THREE.Vector4(0.05, 0.65, 0.45, 0.90) }
         },
         side: THREE.DoubleSide
-    });
+    }), [texture, videoTexture]);
 
     return (
         <group ref={groupRef} {...props}>

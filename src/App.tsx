@@ -28,19 +28,12 @@ function App() {
             >
               <ambientLight intensity={1.0} />
               <pointLight position={[10, 10, 10]} intensity={1.0} />
-              <group position={[0, -7.5, 0]}>
-                <PicoCADModel url="/playdate.txt" textureUrl="/playdate.png" scale={1.3} />
+              <group position={[0, -5.5, 0]}>
+                <PicoCADModel url="/playdate.txt" textureUrl="/playdate.png" scale={1.22} />
               </group>
               <OrbitControls enableZoom={false} enablePan={false} />
             </Canvas>
           </div>
-        </div>
-        
-        <div className="hero-content">
-          <h1 className="hero-title">
-            It's a new, tiny handheld game system<br/>
-            with a bunch of brand-new games.
-          </h1>
         </div>
       </main>
     </div>
