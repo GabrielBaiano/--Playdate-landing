@@ -1,0 +1,2 @@
+"import { Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Orbit, Vec3 } from 'ogl';\nimport './style.css';\n\ninterface PicoCADObject {\n    name: string;\n    pos: [number, number, number];\n    rot: [number, number, number];\n    v: [numbe
+<truncated 13917 bytes>
