@@ -14,10 +14,22 @@
   --font-pixel: 'Pixelify Sans', cursive;
 }
 
+html {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+.hero-section,
+.white-section,
+.orange-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* Forces scroll wheel to halt at the section boundary */
 }
 
 body {
@@ -166,15 +178,26 @@ body::before {
 }
 
 
-/* Yellow Scroll Section */
-.yellow-section {
+/* White Scroll Section */
+.white-section {
   position: relative;
   z-index: 5; /* Behind the 3D model */
-  background-color: #e6b200; /* Darker mustard yellow for contrast against the bright console */
+  background-color: #ffffff; /* Clean white background */
   width: 100%;
   height: 250vh; /* Tall enough to allow a long scroll animation */
   padding: 0;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.1); /* Softer shadow for white background */
+}
+
+/* Orange Scroll Section */
+.orange-section {
+  position: relative;
+  z-index: 5;
+  background-color: #ff6b00; /* Vibrant brutalist orange */
+  width: 100%;
+  height: 200vh; /* Scroll space to trigger the final animation */
+  padding: 0;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
 }
 
 .yellow-container {
@@ -189,57 +212,7 @@ body::before {
   z-index: 20; /* Speech bubble on top of 3D model */
 }
 
-/* Speech Bubble styling */
-.speech-bubble {
-  background: white;
-  border: 5px solid black;
-  border-radius: 30px;
-  padding: 3rem;
-  position: relative;
-  box-shadow: 15px 15px 0px rgba(0,0,0,1);
-  max-width: 600px;
-  width: 45%;
-}
 
-/* Speech bubble tail */
-.speech-bubble::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -50px; /* Pointing to the left, where the Playdate is */
-  transform: translateY(-50%);
-  border-width: 25px 50px 25px 0;
-  border-style: solid;
-  border-color: transparent black transparent transparent;
-}
-.speech-bubble::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -38px;
-  transform: translateY(-50%);
-  border-width: 19px 38px 19px 0;
-  border-style: solid;
-  border-color: transparent white transparent transparent;
-}
-
-.speech-title {
-  font-family: 'Inter', var(--font-main);
-  font-size: clamp(2rem, 3vw, 2.5rem);
-  font-weight: 900;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: black;
-  margin-bottom: 1rem;
-}
-
-.speech-text {
-  font-family: 'Inter', var(--font-main);
-  font-size: clamp(1.2rem, 1.5vw, 1.5rem);
-  font-weight: 600;
-  color: #333;
-  line-height: 1.4;
-}
 
 /* Responsive */
 @media (max-width: 768px) {

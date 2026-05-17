@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+.rpg-bubble {
+  position: relative;
+  background-color: white;
+  border: 6px solid black; /* Chunky pixel border */
+  border-radius: 0; /* Square for pixel look */
+  padding: 2rem 2.5rem;
+  box-shadow: 15px 15px 0px 0px rgba(0,0,0,1); /* Hard pixel drop shadow */
+  display: inline-block;
+  min-height: 120px;
+  max-width: 90vw;
+  image-rendering: pixelated;
+  text-align: left;
+  
+  /* Smooth exit/entrance animations */
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none; /* Disable interaction when hidden */
+}
+
+.rpg-bubble.rpg-bubble-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+/* Set transform origins for pop effect depending on direction */
+.rpg-bubble-bottom {
+  transform-origin: bottom center;
+}
+.rpg-bubble-left {
+  transform-origin: center left;
+}
+.rpg-bubble-right {
+  transform-origin: center right;
+}
+.rpg-bubble-top {
+  transform-origin: top center;
+}
+
+/* Tails */
+.rpg-bubble-left::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -40px;
+  transform: translateY(-50%);
+  border-width: 25px 40px 25px 0;
+  border-style: solid;
+  border-color: transparent black transparent transparent;
+}
+.rpg-bubble-left::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -28px;
+  transform: translateY(-50%);
+  border-width: 19px 34px 19px 0;
+  border-style: solid;
+  border-color: transparent white transparent transparent;
+}
+
+.rpg-bubble-bottom::before {
+  content: "";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 25px 40px 0 25px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+.rpg-bubble-bottom::after {
+  content: "";
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 19px 34px 0 19px;
+  border-style: solid;
+  border-color: white transparent transparent transparent;
+}
+
+.rpg-text {
+  font-family: 'VT323', monospace;
+  font-size: 2.5rem;
+  line-height: 1.2;
+  color: black;
+  margin: 0;
+  white-space: pre-wrap; /* Preserve newlines */
+}
+
+.rpg-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

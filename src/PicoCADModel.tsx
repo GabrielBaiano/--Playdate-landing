@@ -155,9 +155,10 @@ void main() {
 }
 `;
 
-export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: any) {
+export default function PicoCADModel({ url, textureUrl, scale = 1, children, ...props }: any) {
     const [geometries, setGeometries] = useState<THREE.BufferGeometry[]>([]);
     const groupRef = useRef<THREE.Group>(null);
+    const rotationGroupRef = useRef<THREE.Group>(null);
     const texture = useLoader(THREE.TextureLoader, textureUrl);
     
     // Create video element
@@ -186,9 +187,9 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
         texture.colorSpace = THREE.SRGBColorSpace;
         
         // Setup initial intro spin
-        if (groupRef.current) {
-            groupRef.current.rotation.y = -Math.PI / 2 + Math.PI * 6; // 3 full spins starting from target
-            groupRef.current.rotation.x = 0;
+        if (rotationGroupRef.current && groupRef.current) {
+            rotationGroupRef.current.rotation.y = -Math.PI / 2 + Math.PI * 6; // 3 full spins starting from target
+            rotationGroupRef.current.rotation.x = 0;
             groupRef.current.scale.set(0.001, 0.001, 0.001); // Start tiny for Mario 64 zoom
         }
         
@@ -200,46 +201,77 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
     }, [url, texture]);
 
     useFrame((state, delta) => {
-        if (groupRef.current) {
+        if (groupRef.current && rotationGroupRef.current) {
             const t = state.clock.elapsedTime;
             const scrollY = window.scrollY;
             const vh = window.innerHeight;
             
-            // Gyroscopic wobble effect
-            const wobbleY = Math.sin(t * 1.4) * 0.30;
-            const wobbleX = Math.cos(t * 1.1) * 0.20;
-            const wobbleZ = Math.sin(t * 1.7) * 0.10;
-            
             // Scroll Animation Logic
-            let progress = 0;
+            // Stage 1: Bottom left corner
+            let progress1 = 0;
             if (scrollY > vh * 0.4) {
-                progress = Math.min(1, (scrollY - vh * 0.4) / (vh * 0.6));
+                progress1 = Math.min(1, (scrollY - vh * 0.4) / (vh * 0.6));
+            }
+            const ease1 = 1 - Math.pow(1 - progress1, 3);
+            
+            // Stage 2: Giant center screen
+            let progress2 = 0;
+            if (scrollY > vh * 2.0) {
+                progress2 = Math.min(1, (scrollY - vh * 2.0) / (vh * 1.0));
+            }
+            const ease2 = 1 - Math.pow(1 - progress2, 3);
+
+            // Gyroscopic wobble effect
+            let currentWobbleIntensity = 1.0;
+            if (ease1 > 0) currentWobbleIntensity = 1 - (ease1 * 0.85);
+            if (ease2 > 0) currentWobbleIntensity = THREE.MathUtils.lerp(currentWobbleIntensity, 0, ease2);
+            
+            const wobbleY = Math.sin(t * 1.4) * 0.30 * currentWobbleIntensity;
+            const wobbleX = Math.cos(t * 1.1) * 0.20 * currentWobbleIntensity;
+            const wobbleZ = Math.sin(t * 1.7) * 0.10 * currentWobbleIntensity;
+            
+            // Base Targets (Top of page)
+            let currentTargetX = 0;
+            let currentTargetY = -3.5;
+            let currentTargetScale = scale;
+            let currentTargetRotX = wobbleX;
+            let currentTargetRotY = -Math.PI / 2 + wobbleY;
+            let currentTargetRotZ = wobbleZ;
+            
+            // Apply Stage 1 Blends
+            if (ease1 > 0) {
+                const idleFloat = Math.sin(t * 2.5) * 0.25 * ease1;
+                currentTargetX = -17 * ease1;
+                currentTargetY = -3.5 + (0.5 * ease1) + idleFloat;
+                currentTargetScale = scale * (1 - 0.45 * ease1);
+                
+                currentTargetRotY = -Math.PI / 2 + wobbleY + (ease1 * Math.PI / 6);
+                currentTargetRotX = wobbleX - (ease1 * Math.PI / 12);
+                currentTargetRotZ = wobbleZ - (ease1 * Math.PI / 16);
             }
             
-            // Smooth ease-out cubic curve
-            const ease = 1 - Math.pow(1 - progress, 3);
+            // Apply Stage 2 Blends (Overrides Stage 1)
+            if (ease2 > 0) {
+                currentTargetX = THREE.MathUtils.lerp(currentTargetX, 0, ease2);
+                currentTargetY = THREE.MathUtils.lerp(currentTargetY, -16.0, ease2); // Lowered even further down
+                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 2.3, ease2); // Shrunk to a reasonable giant size
+                
+                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2, ease2); // Face perfectly forward
+                currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0, ease2);
+                currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0, ease2);
+            }
             
-            // Position targets: bottom left (less extreme)
-            const targetX = -17 * ease; // more to the left
-            const targetY = -3.5 + (0.5 * ease); // higher up (ends up at -3.0)
+            // Apply final computed targets
+            groupRef.current.position.x = THREE.MathUtils.damp(groupRef.current.position.x, currentTargetX, 4.0, delta);
+            groupRef.current.position.y = THREE.MathUtils.damp(groupRef.current.position.y, currentTargetY, 4.0, delta);
             
-            groupRef.current.position.x = THREE.MathUtils.damp(groupRef.current.position.x, targetX, 4.0, delta);
-            groupRef.current.position.y = THREE.MathUtils.damp(groupRef.current.position.y, targetY, 4.0, delta);
-            
-            // Rotation targets: idle pose showing bottom and crank
-            const targetRotY = -Math.PI / 2 + wobbleY + (ease * Math.PI / 6); // slightly less rotation
-            const targetRotX = wobbleX - (ease * Math.PI / 12); // less backwards tilt
-            const targetRotZ = wobbleZ - (ease * Math.PI / 32); // much less Z tilt
-            
-            groupRef.current.rotation.y = THREE.MathUtils.damp(groupRef.current.rotation.y, targetRotY, 3.5, delta);
-            groupRef.current.rotation.x = THREE.MathUtils.damp(groupRef.current.rotation.x, targetRotX, 3.5, delta);
-            groupRef.current.rotation.z = THREE.MathUtils.damp(groupRef.current.rotation.z, targetRotZ, 3.5, delta);
-            
-            // Scale target: gets smaller
-            const targetScale = scale * (1 - 0.45 * ease); // 45% smaller
             const currentScale = groupRef.current.scale.x;
-            const newScale = THREE.MathUtils.damp(currentScale, targetScale, 3.5, delta);
+            const newScale = THREE.MathUtils.damp(currentScale, currentTargetScale, 3.5, delta);
             groupRef.current.scale.set(newScale, newScale, newScale);
+            
+            rotationGroupRef.current.rotation.y = THREE.MathUtils.damp(rotationGroupRef.current.rotation.y, currentTargetRotY, 3.5, delta);
+            rotationGroupRef.current.rotation.x = THREE.MathUtils.damp(rotationGroupRef.current.rotation.x, currentTargetRotX, 3.5, delta);
+            rotationGroupRef.current.rotation.z = THREE.MathUtils.damp(rotationGroupRef.current.rotation.z, currentTargetRotZ, 3.5, delta);
         }
     });
 
@@ -259,9 +291,12 @@ export default function PicoCADModel({ url, textureUrl, scale = 1, ...props }: a
 
     return (
         <group ref={groupRef} {...props}>
-            {geometries.map((geo, i) => (
-                <mesh key={i} geometry={geo} material={material} />
-            ))}
+            <group ref={rotationGroupRef}>
+                {geometries.map((geo, i) => (
+                    <mesh key={i} geometry={geo} material={material} />
+                ))}
+            </group>
+            {children}
         </group>
     );
 }
