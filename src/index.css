@@ -251,16 +251,113 @@ body::before {
   width: 100%;
   height: 250vh; /* Tall enough to allow a long scroll animation */
   padding: 0;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.1); /* Softer shadow for white background */
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+}
+
+.white-sticky-content {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-end; /* Put content on the right side */
+  align-items: center;
+  padding-right: 4rem; /* Safe padding from right edge */
+  overflow: hidden;
+  pointer-events: none; /* Let scroll/clicks pass through */
+}
+
+.carousel-showcase-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+  width: 55vw; /* Cover right 55% of screen */
+  max-width: 800px;
+  transform: rotate(-3deg); /* Slight brutalist rotation */
+  pointer-events: auto; /* Allow hover and interactions */
+  z-index: 100;
+}
+
+.carousel-row {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+  /* Smooth horizontal fade out on edges */
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+.carousel-track {
+  display: flex;
+  gap: 1.8rem;
+  width: max-content;
+}
+
+.carousel-row:hover .carousel-track {
+  animation-play-state: paused; /* Pause on hover */
+}
+
+.carousel-game-card {
+  width: 220px;
+  height: 132px; /* 1.66 aspect ratio matching Playdate screen */
+  flex-shrink: 0;
+  background-color: #000000;
+  border: 3px solid #000000;
+  box-shadow: 5px 5px 0px #000000;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  border-radius: 6px;
+}
+
+.carousel-game-card:hover {
+  transform: scale(1.06) translate(-3px, -3px);
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.carousel-game-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: contrast(1.1) brightness(0.98);
+  image-rendering: auto;
+}
+
+/* Loop animations */
+.scroll-left-track {
+  animation: scroll-left-kf 25s linear infinite;
+}
+
+.scroll-right-track {
+  animation: scroll-right-kf 25s linear infinite;
+}
+
+@keyframes scroll-left-kf {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes scroll-right-kf {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* Orange Scroll Section */
 .orange-section {
   position: relative;
-  z-index: 5;
+  z-index: 5; /* Behind the 3D model so close-up is visible */
   background-color: #ff6b00; /* Vibrant brutalist orange */
   width: 100%;
-  height: 200vh; /* Scroll space to trigger the final animation */
+  height: 200vh; /* Restore scroll space for final scale transition */
   padding: 0;
   box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
 }

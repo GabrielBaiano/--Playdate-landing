@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import PicoCADModel from './PicoCADModel';
 import { RPGBubble } from './components/RPGBubble';
+import { SEASON_ONE_ROW_1, SEASON_ONE_ROW_2, SEASON_ONE_ROW_3 } from './data/seasonOne';
 import './index.css';
 
 function App() {
@@ -76,11 +77,48 @@ function App() {
         </section>
 
         <section className="white-section">
-          {/* Empty white section, content is now tracked to the 3D model via <Html> */}
+          <div className="white-sticky-content">
+            <div className="carousel-showcase-container">
+              
+              {/* Carousel Row 1 - Scrolls Left */}
+              <div className="carousel-row">
+                <div className="carousel-track scroll-left-track">
+                  {[...SEASON_ONE_ROW_1, ...SEASON_ONE_ROW_1].map((game, idx) => (
+                    <div key={idx} className="carousel-game-card">
+                      <img src={game.imageUrl} alt={game.title} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Carousel Row 2 - Scrolls Right */}
+              <div className="carousel-row">
+                <div className="carousel-track scroll-right-track">
+                  {[...SEASON_ONE_ROW_2, ...SEASON_ONE_ROW_2].map((game, idx) => (
+                    <div key={idx} className="carousel-game-card">
+                      <img src={game.imageUrl} alt={game.title} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Carousel Row 3 - Scrolls Left */}
+              <div className="carousel-row">
+                <div className="carousel-track scroll-left-track">
+                  {[...SEASON_ONE_ROW_3, ...SEASON_ONE_ROW_3].map((game, idx) => (
+                    <div key={idx} className="carousel-game-card">
+                      <img src={game.imageUrl} alt={game.title} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
         </section>
         
         <section className="orange-section">
-          {/* Final giant screen section */}
+          {/* Clean spacer section for scroll transition */}
         </section>
       </main>
     </div>
