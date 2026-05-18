@@ -78,6 +78,25 @@ function App() {
 
         <section className="white-section">
           <div className="white-sticky-content">
+            
+            <div className="catalog-info-container">
+              <a href="https://play.date/games" target="_blank" rel="noopener noreferrer" className="catalog-logo-link">
+                <div className="catalog-logo-badge" aria-label="Playdate Catalog" />
+              </a>
+              <p className="catalog-description">
+                The fun continues with awesome new Playdate games made by developers around the world. You can install our favorites with <a href="https://play.date/games" target="_blank" rel="noopener noreferrer" className="catalog-inline-link"><b>Catalog</b></a>, a little game store right on your Playdate.
+              </p>
+              <div className="catalog-btn-wrapper">
+                <a href="https://play.date/games" target="_blank" rel="noopener noreferrer" className="catalog-btn-grab">
+                  <svg className="catalog-btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" fill="white" />
+                    <path d="M12 7V16.5M12 16.5L8.5 13M12 16.5L15.5 13" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Grab some games!
+                </a>
+              </div>
+            </div>
+
             <div className="carousel-showcase-container">
               
               {/* Carousel Row 1 - Scrolls Left */}

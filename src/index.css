@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Pixelify+Sans:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Pixelify+Sans:wght@700&family=Outfit:wght@300;400;500;700;800&display=swap');
 
 :root {
   --pd-yellow: #FFCC00;
@@ -260,20 +260,112 @@ body::before {
   width: 100%;
   height: 100vh;
   display: flex;
-  justify-content: flex-end; /* Put content on the right side */
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding-right: 4rem; /* Safe padding from right edge */
   overflow: hidden;
   pointer-events: none; /* Let scroll/clicks pass through */
+  padding: 2rem 0;
+}
+
+/* Catalog Section Layout */
+.catalog-info-container {
+  width: 100%;
+  max-width: 680px;
+  text-align: center;
+  margin: 0 auto 2.5rem auto;
+  padding: 0 1.5rem;
+  z-index: 105;
+  pointer-events: auto; /* Allow clicks on buttons/links */
+  transition: all 0.3s ease;
+}
+
+.catalog-logo-badge {
+  background-image: url("https://static-cdn.play.date/static/images/games/catalog-banner-logo-may2023.d08a55a9e501.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 90px;
+  width: 200px;
+  margin: 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.catalog-logo-badge:hover {
+  transform: scale(1.03);
+}
+
+.catalog-description {
+  font-family: var(--font-main);
+  font-size: 1.22rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #000000;
+  margin: 1.2rem auto 1.5rem auto;
+  max-width: 580px;
+}
+
+.catalog-description b {
+  font-weight: 700;
+}
+
+.catalog-inline-link {
+  color: #000000;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.catalog-inline-link:hover {
+  opacity: 0.7;
+}
+
+.catalog-btn-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.catalog-btn-grab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: var(--font-main);
+  font-weight: 700;
+  font-size: 1.25rem;
+  text-decoration: none;
+  padding: 0.55rem 1.4rem;
+  border-radius: 50px; /* Perfectly round pill shaped */
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.catalog-btn-grab:hover {
+  transform: scale(1.05);
+  background-color: #1c1c1e;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.catalog-btn-grab:active {
+  transform: scale(0.98);
+}
+
+.catalog-btn-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-block;
 }
 
 .carousel-showcase-container {
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
-  width: 55vw; /* Cover right 55% of screen */
-  max-width: 800px;
-  transform: rotate(-3deg); /* Slight brutalist rotation */
+  gap: 1.6rem;
+  width: 100vw; /* Stretch edge-to-edge across the screen */
+  max-width: none;
+  transform: none; /* Perfectly horizontal, flat */
   pointer-events: auto; /* Allow hover and interactions */
   z-index: 100;
 }
@@ -284,13 +376,13 @@ body::before {
   overflow: hidden;
   user-select: none;
   /* Smooth horizontal fade out on edges */
-  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
 
 .carousel-track {
   display: flex;
-  gap: 1.8rem;
+  gap: 1.6rem;
   width: max-content;
 }
 
@@ -299,20 +391,20 @@ body::before {
 }
 
 .carousel-game-card {
-  width: 220px;
-  height: 132px; /* 1.66 aspect ratio matching Playdate screen */
+  width: 230px; /* Standard wide size */
+  height: 138px; /* 1.66 Playdate aspect ratio */
   flex-shrink: 0;
   background-color: #000000;
-  border: 3px solid #000000;
+  border: 3.5px solid #000000;
   box-shadow: 5px 5px 0px #000000;
   overflow: hidden;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .carousel-game-card:hover {
-  transform: scale(1.06) translate(-3px, -3px);
-  box-shadow: 8px 8px 0px #000000;
+  transform: scale(1.05) translate(-2px, -2px);
+  box-shadow: 7px 7px 0px #000000;
 }
 
 .carousel-game-card img {
@@ -320,7 +412,7 @@ body::before {
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: contrast(1.1) brightness(0.98);
+  filter: contrast(1.05) brightness(0.98);
   image-rendering: auto;
 }
 
@@ -377,6 +469,12 @@ body::before {
 
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .catalog-info-container {
+    max-width: 600px;
+  }
+}
+
 @media (max-width: 768px) {
   .nav-bar {
     flex-direction: column;
@@ -395,5 +493,25 @@ body::before {
     border-top: 4px solid var(--accent-cyan);
     border-bottom: 4px solid var(--accent-cyan);
     padding: 1rem 0;
+  }
+  
+  .catalog-info-container {
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  
+  .catalog-logo-badge {
+    height: 70px;
+    width: 160px;
+  }
+  
+  .catalog-description {
+    font-size: 1.1rem;
+    margin: 1rem auto;
+  }
+  
+  .catalog-btn-grab {
+    font-size: 1.1rem;
+    padding: 0.5rem 1.2rem;
   }
 }
