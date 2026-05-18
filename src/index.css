@@ -89,6 +89,23 @@ body::before {
   letter-spacing: -1px;
 }
 
+.hero-logo {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  font-family: 'Pixelify Sans', 'Space Mono', monospace;
+  font-size: 6.5rem;
+  font-weight: 700;
+  color: var(--pd-yellow);
+  letter-spacing: -2px;
+  text-shadow: 5px 5px 0px rgba(0, 0, 0, 0.85);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
 .nav-links {
   display: flex;
   gap: 1.5rem;
@@ -128,6 +145,23 @@ body::before {
 }
 
 .btn-buy:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 var(--text-main) !important;
+}
+
+.btn-see-more {
+  border: 2px solid var(--text-main) !important;
+  color: var(--text-main) !important;
+  padding: 0.5rem 1.2rem;
+  font-weight: 700 !important;
+  box-shadow: 4px 4px 0 var(--text-main);
+  transition: transform 0.2s, box-shadow 0.2s !important;
+  border-radius: 0 !important; /* Brutalist shape */
+}
+
+.btn-see-more:hover {
+  background-color: var(--text-main) !important;
+  color: var(--bg-color) !important;
   transform: translate(2px, 2px) !important;
   box-shadow: 2px 2px 0 var(--text-main) !important;
 }

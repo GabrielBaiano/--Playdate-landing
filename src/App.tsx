@@ -29,20 +29,9 @@ function App() {
 
   return (
     <div className="app-container">
-      <nav className="nav-bar">
-        <div className="logo">playdate</div>
-        <div className="nav-links">
-          <a href="#games"><span>✨</span> Games</a>
-          <a href="#dev"><span>💻</span> Dev</a>
-          <a href="#education"><span>🎓</span> Education</a>
-          <a href="#help"><span>❓</span> Help</a>
-          <a href="#signin"><span>👤</span> Sign In</a>
-          <a href="#buy" className="btn-buy"><span>🛍️</span> Buy Now!!</a>
-        </div>
-      </nav>
-
       <main>
         <section className="hero-section">
+          <div className="hero-logo">playdate</div>
           <div className="hero-3d">
             <div className="canvas-container">
               <Canvas 

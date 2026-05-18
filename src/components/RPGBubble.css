@@ -2,11 +2,11 @@
 
 .rpg-bubble {
   position: relative;
-  background-color: white;
-  border: 6px solid black; /* Chunky pixel border */
-  border-radius: 0; /* Square for pixel look */
-  padding: 2rem 2.5rem;
-  box-shadow: 15px 15px 0px 0px rgba(0,0,0,1); /* Hard pixel drop shadow */
+  background-color: transparent;
+  border: 18px solid transparent;
+  border-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 42 42'><rect x='0' y='12' width='6' height='18' fill='black'/><rect x='6' y='6' width='6' height='6' fill='black'/><rect x='6' y='30' width='6' height='6' fill='black'/><rect x='12' y='0' width='18' height='6' fill='black'/><rect x='12' y='36' width='18' height='6' fill='black'/><rect x='30' y='6' width='6' height='6' fill='black'/><rect x='30' y='30' width='6' height='6' fill='black'/><rect x='36' y='12' width='6' height='18' fill='black'/><rect x='12' y='6' width='18' height='30' fill='white'/><rect x='6' y='12' width='6' height='18' fill='white'/><rect x='30' y='12' width='6' height='18' fill='white'/></svg>") 18 fill stretch;
+  padding: 1.5rem 2rem;
+  box-shadow: none; /* Removed shadow */
   display: inline-block;
   min-height: 120px;
   max-width: 90vw;
@@ -45,42 +45,74 @@
   content: "";
   position: absolute;
   top: 50%;
-  left: -40px;
-  transform: translateY(-50%);
-  border-width: 25px 40px 25px 0;
-  border-style: solid;
-  border-color: transparent black transparent transparent;
+  left: -18px; /* Offset to align with outer boundary */
+  margin-top: -3px; /* Center of 6px height */
+  width: 6px;
+  height: 6px;
+  background: white;
+  box-shadow:
+    /* Inward connection (covering bubble border) */
+    12px 0 0 white,
+    6px 0 0 white,
+    /* at border (dx = 0) */
+    0px -18px 0 black,
+    0px -12px 0 white,
+    0px -6px 0 white,
+    0px 6px 0 white,
+    0px 12px 0 white,
+    0px 18px 0 black,
+    /* dx = -1 (left 6px) */
+    -6px -12px 0 black,
+    -6px -6px 0 white,
+    -6px 0px 0 white,
+    -6px 6px 0 white,
+    -6px 12px 0 black,
+    /* dx = -2 (left 12px) */
+    -12px -6px 0 black,
+    -12px 0px 0 white,
+    -12px 6px 0 black,
+    /* dx = -3 (left 18px - tip) */
+    -18px 0px 0 black;
 }
 .rpg-bubble-left::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -28px;
-  transform: translateY(-50%);
-  border-width: 19px 34px 19px 0;
-  border-style: solid;
-  border-color: transparent white transparent transparent;
+  display: none; /* Handled in ::before */
 }
 
 .rpg-bubble-bottom::before {
   content: "";
   position: absolute;
-  bottom: -40px;
+  bottom: -18px; /* Offset to align with outer boundary */
   left: 50%;
-  transform: translateX(-50%);
-  border-width: 25px 40px 0 25px;
-  border-style: solid;
-  border-color: black transparent transparent transparent;
+  margin-left: -3px; /* Center of 6px width */
+  width: 6px;
+  height: 6px;
+  background: white;
+  box-shadow:
+    /* Inward connection (covering bubble border) */
+    0px -12px 0 white,
+    0px -6px 0 white,
+    /* at border (dy = 0) */
+    -18px 0 0 black,
+    -12px 0 0 white,
+    -6px 0 0 white,
+    6px 0 0 white,
+    12px 0 0 white,
+    18px 0 0 black,
+    /* dy = 1 (down 6px) */
+    -12px 6px 0 black,
+    -6px 6px 0 white,
+    0px 6px 0 white,
+    6px 6px 0 white,
+    12px 6px 0 black,
+    /* dy = 2 (down 12px) */
+    -6px 12px 0 black,
+    0px 12px 0 white,
+    6px 12px 0 black,
+    /* dy = 3 (down 18px - tip) */
+    0px 18px 0 black;
 }
 .rpg-bubble-bottom::after {
-  content: "";
-  position: absolute;
-  bottom: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 19px 34px 0 19px;
-  border-style: solid;
-  border-color: white transparent transparent transparent;
+  display: none; /* Handled in ::before */
 }
 
 .rpg-text {
