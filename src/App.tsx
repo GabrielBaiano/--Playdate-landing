@@ -31,7 +31,13 @@ function App() {
     <div className="app-container">
       <main>
         <section className="hero-section">
-          <div className="hero-logo">playdate</div>
+          <div className="hero-logo">
+            {"playdate".split("").map((letter, idx) => (
+              <span key={idx} style={{ animationDelay: `${1.5 + idx * 0.08}s` }}>
+                {letter}
+              </span>
+            ))}
+          </div>
           <div className="hero-3d">
             <div className="canvas-container">
               <Canvas 
@@ -46,16 +52,16 @@ function App() {
                   <PicoCADModel url="/playdate.txt" textureUrl="/playdate.png" scale={1.22}>
                     <Html position={[12, 5, 0]} center zIndexRange={[100, 0]}>
                       <RPGBubble 
-                        text={"Hi."}
+                        text={"Hi! I'm Playdate."}
                         direction="left"
-                        width="120px"
+                        width="220px"
                         visible={stage === 'hero'}
                       />
                     </Html>
                     <Html position={[0, 13, 0]} zIndexRange={[100, 0]}>
                       <div style={{ position: 'absolute', bottom: '0px', transform: 'translateX(-50%)' }}>
                         <RPGBubble 
-                          text={"It's a new, tiny handheld game system.\n\nWith a bunch of brand-new games.\nWe made Playdate just for fun."}
+                          text={"I'm a tiny, yellow handheld game system.\n\nWith a bunch of brand-new games."}
                           direction="bottom"
                           width="450px"
                           visible={stage === 'white'}
