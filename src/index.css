@@ -27,6 +27,7 @@ html {
 
 .hero-section,
 .white-section,
+.specs-section,
 .orange-section {
   scroll-snap-align: start;
   scroll-snap-stop: always; /* Forces scroll wheel to halt at the section boundary */
@@ -443,11 +444,11 @@ body::before {
 .orange-section {
   position: relative;
   z-index: 5; /* Behind the 3D model so close-up is visible */
-  background-color: #ff6b00; /* Vibrant brutalist orange */
+  background-color: #ffffff; /* Clean white background, matching the catalog fold */
   width: 100%;
   height: 200vh; /* Restore scroll space for final scale transition */
   padding: 0;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.05); /* Softer drop shadow for white-on-white layout */
 }
 
 .yellow-container {
@@ -510,4 +511,103 @@ body::before {
     font-size: 1.1rem;
     padding: 0.5rem 1.2rem;
   }
+}
+
+/* Specs Section */
+.specs-section {
+  position: relative;
+  z-index: 5;
+  background-color: #121620; /* Deep charcoal matching --pd-dark */
+  width: 100%;
+  height: 280vh;
+  padding: 0;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+}
+
+.specs-sticky-content {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+  padding-left: 8%;
+}
+
+.specs-container {
+  width: 100%;
+  max-width: 580px; /* Leave the right side completely clear for the 3D Playdate model! */
+  z-index: 10;
+  text-align: left;
+}
+
+.specs-title {
+  font-family: var(--font-main);
+  font-size: 4.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  letter-spacing: -2px;
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.2rem;
+  width: 100%;
+}
+
+.specs-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+.specs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.specs-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #8a8f98;
+  letter-spacing: 1px;
+}
+
+.specs-value-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.specs-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.specs-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.specs-text strong {
+  font-family: var(--font-main);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.specs-text span {
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #c5c8cf;
 }

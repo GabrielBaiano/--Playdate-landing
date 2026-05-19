@@ -317,16 +317,24 @@ export default function PicoCADModel({
             }
             const ease1 = 1 - Math.pow(1 - progress1, 3);
 
-            // Stage 2: Giant center screen
+            // Specs Section Stage: Slide to right side and rotate to show profile
+            let progressSpecs = 0;
+            if (scrollY > vh * 3.1) {
+                progressSpecs = Math.min(1, (scrollY - vh * 3.1) / (vh * 0.6));
+            }
+            const easeSpecs = 1 - Math.pow(1 - progressSpecs, 3);
+
+            // Stage 3: Giant center screen zoom
             let progress2 = 0;
-            if (scrollY > vh * 2.0) {
-                progress2 = Math.min(1, (scrollY - vh * 2.0) / (vh * 1.0));
+            if (scrollY > vh * 6.0) {
+                progress2 = Math.min(1, (scrollY - vh * 6.0) / (vh * 1.0));
             }
             const ease2 = 1 - Math.pow(1 - progress2, 3);
 
             // Gyroscopic wobble effect
             let currentWobbleIntensity = 1.0;
             if (ease1 > 0) currentWobbleIntensity = 1 - (ease1 * 0.85);
+            if (easeSpecs > 0) currentWobbleIntensity = THREE.MathUtils.lerp(currentWobbleIntensity, 0.4, easeSpecs);
             if (ease2 > 0) currentWobbleIntensity = THREE.MathUtils.lerp(currentWobbleIntensity, 0, ease2);
 
             const wobbleY = Math.sin(t * 1.4) * 0.30 * currentWobbleIntensity;
@@ -341,7 +349,7 @@ export default function PicoCADModel({
             let currentTargetRotY = -Math.PI / 2 + wobbleY;
             let currentTargetRotZ = wobbleZ;
 
-            // Apply Stage 1 Blends
+            // Apply Stage 1 Blends (Catalog bottom-left)
             if (ease1 > 0) {
                 const idleFloat = Math.sin(t * 2.5) * 0.25 * ease1;
                 currentTargetX = -17 * ease1;
@@ -353,13 +361,25 @@ export default function PicoCADModel({
                 currentTargetRotZ = wobbleZ - (ease1 * Math.PI / 16);
             }
 
-            // Apply Stage 2 Blends (Overrides Stage 1)
+            // Apply Specs Blends (Overrides Stage 1: Slide to right side and rotate to show profile)
+            if (easeSpecs > 0) {
+                currentTargetX = THREE.MathUtils.lerp(currentTargetX, 14.5, easeSpecs);
+                currentTargetY = THREE.MathUtils.lerp(currentTargetY, -2.0, easeSpecs);
+                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 1.25, easeSpecs);
+
+                // Rotate it significantly on Y to showcase the slim 9mm profile and crank hinge!
+                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2 + Math.PI * 0.65, easeSpecs);
+                currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0.05, easeSpecs);
+                currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, -0.05, easeSpecs);
+            }
+
+            // Apply Stage 3 Blends (Overrides Specs & Stage 1: Zoom to giant center)
             if (ease2 > 0) {
                 currentTargetX = THREE.MathUtils.lerp(currentTargetX, 0, ease2);
-                currentTargetY = THREE.MathUtils.lerp(currentTargetY, -16.0, ease2); // Lowered even further down
-                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 2.3, ease2); // Shrunk to a reasonable giant size
+                currentTargetY = THREE.MathUtils.lerp(currentTargetY, -16.0, ease2);
+                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 2.3, ease2);
 
-                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2, ease2); // Face perfectly forward
+                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2, ease2); // perfectly forward
                 currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0, ease2);
                 currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0, ease2);
             }
