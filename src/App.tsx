@@ -50,7 +50,12 @@ function App() {
                 <ambientLight intensity={1.0} />
                 <pointLight position={[10, 10, 10]} intensity={1.0} />
                 <group position={[0, -5.5, 0]}>
-                  <PicoCADModel url="/playdate.txt" textureUrl="/playdate.png" scale={1.22}>
+                  <PicoCADModel 
+                    url="/playdate.txt" 
+                    textureUrl="/playdate.png" 
+                    scale={1.22} 
+                    videoSrc="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                  >
                     <Html position={[12, 5, 0]} center zIndexRange={[100, 0]}>
                       <RPGBubble 
                         text={"Hi! I'm Playdate."}
