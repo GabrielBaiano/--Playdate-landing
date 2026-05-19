@@ -121,12 +121,17 @@ void main() {
     vec4 texColor = texture2D(map, vUv);
     if (texColor.a < 0.1) discard;
     
-    // Replace screen pixels with a semi-transparent green overlay for alignment debugging
+    // Replace screen pixels with canvas face texture
     if (vUv.x >= screenBounds.x && vUv.x <= screenBounds.z && 
         vUv.y >= screenBounds.y && vUv.y <= screenBounds.w) {
         
-        // Blend 50% green color with the original texture
-        texColor = vec4(mix(texColor.rgb, vec3(0.0, 1.0, 0.0), 0.5), 1.0);
+        vec2 vidUv = vec2(
+            (vUv.x - screenBounds.x) / (screenBounds.z - screenBounds.x),
+            (vUv.y - screenBounds.y) / (screenBounds.w - screenBounds.y)
+        );
+        
+        vec4 vidColor = texture2D(videoMap, vidUv);
+        texColor = vidColor;
     }
     
     // Set shader shadow multiplier to 1.0 to remove dithered shadows on 3D elements
@@ -134,48 +139,133 @@ void main() {
 }
 `;
 
+const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy' | 'normal', time: number) => {
+    // Fill background with Playdate classic screen color (retro green-grey LCD)
+    ctx.fillStyle = "#b5c2a3"; // Classic Playdate retro LCD color!
+    ctx.fillRect(0, 0, 400, 240);
+    
+    // Set line and fill styles
+    ctx.strokeStyle = "#1b1f1a"; // Off-black classic ink
+    ctx.fillStyle = "#1b1f1a";
+    ctx.lineWidth = 12;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    if (faceType === 'surprised') {
+        // @ @ (Surprised spiral eyes!)
+        // Left eye spiral
+        ctx.beginPath();
+        for (let i = 0; i < 30; i++) {
+            const angle = 0.3 * i;
+            const r = 2 + 1.2 * i;
+            const x = 130 + r * Math.cos(angle + time * 6);
+            const y = 120 + r * Math.sin(angle + time * 6);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        
+        // Right eye spiral
+        ctx.beginPath();
+        for (let i = 0; i < 30; i++) {
+            const angle = 0.3 * i;
+            const r = 2 + 1.2 * i;
+            const x = 270 + r * Math.cos(angle - time * 6);
+            const y = 120 + r * Math.sin(angle - time * 6);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        
+        // Small surprised open mouth (o)
+        ctx.beginPath();
+        ctx.arc(200, 185, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+    } else if (faceType === 'happy') {
+        // > < (Happy blinking chevron eyes!)
+        // Left eye >
+        ctx.beginPath();
+        ctx.moveTo(110, 95);
+        ctx.lineTo(150, 120);
+        ctx.lineTo(110, 145);
+        ctx.stroke();
+        
+        // Right eye <
+        ctx.beginPath();
+        ctx.moveTo(290, 95);
+        ctx.lineTo(250, 120);
+        ctx.lineTo(290, 145);
+        ctx.stroke();
+        
+        // Cute happy open smile mouth (U)
+        ctx.beginPath();
+        ctx.arc(200, 160, 20, 0, Math.PI);
+        ctx.stroke();
+        
+    } else {
+        // Normal open eyes (nice friendly circles with white shine!)
+        // Left eye circle
+        ctx.beginPath();
+        ctx.arc(130, 120, 22, 0, Math.PI * 2);
+        ctx.fill();
+        // Left eye shine
+        ctx.fillStyle = "#b5c2a3";
+        ctx.beginPath();
+        ctx.arc(122, 112, 6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Right eye circle
+        ctx.fillStyle = "#1b1f1a";
+        ctx.beginPath();
+        ctx.arc(270, 120, 22, 0, Math.PI * 2);
+        ctx.fill();
+        // Right eye shine
+        ctx.fillStyle = "#b5c2a3";
+        ctx.beginPath();
+        ctx.arc(262, 112, 6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Friendly smile curve
+        ctx.strokeStyle = "#1b1f1a";
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.arc(200, 155, 15, 0.1 * Math.PI, 0.9 * Math.PI);
+        ctx.stroke();
+    }
+};
+
 export default function PicoCADModel({
     url,
     textureUrl,
     scale = 1,
     children,
-    videoSrc = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    stage = "hero",
     ...props
 }: any) {
     const [geometries, setGeometries] = useState<THREE.BufferGeometry[]>([]);
     const groupRef = useRef<THREE.Group>(null);
     const rotationGroupRef = useRef<THREE.Group>(null);
     const texture = useLoader(THREE.TextureLoader, textureUrl);
+    const prevRotY = useRef(0);
 
-    // Create video element reactively when videoSrc changes
-    const video = useMemo(() => {
-        const vid = document.createElement("video");
-        vid.src = videoSrc;
-        vid.crossOrigin = "Anonymous";
-        vid.loop = true;
-        vid.muted = true;
-        vid.playsInline = true;
-        vid.play().catch(e => console.error("Video play failed", e));
-        return vid;
-    }, [videoSrc]);
+    // Create offscreen canvas reactively
+    const canvas = useMemo(() => {
+        const c = document.createElement("canvas");
+        c.width = 400;
+        c.height = 240;
+        return c;
+    }, []);
+    const ctx = useMemo(() => canvas.getContext("2d")!, [canvas]);
 
-    // Manage video element cleanup to prevent memory leaks
-    useEffect(() => {
-        return () => {
-            video.pause();
-            video.src = "";
-            video.load();
-        };
-    }, [video]);
-
-    // Create video texture
-    const videoTexture = useMemo(() => {
-        const tex = new THREE.VideoTexture(video);
+    // Create canvas texture
+    const canvasTexture = useMemo(() => {
+        const tex = new THREE.CanvasTexture(canvas);
         tex.minFilter = THREE.NearestFilter;
         tex.magFilter = THREE.NearestFilter;
         tex.colorSpace = THREE.SRGBColorSpace;
         return tex;
-    }, [video]);
+    }, [canvas]);
 
     useEffect(() => {
         texture.magFilter = THREE.NearestFilter;
@@ -268,6 +358,21 @@ export default function PicoCADModel({
             rotationGroupRef.current.rotation.y = THREE.MathUtils.damp(rotationGroupRef.current.rotation.y, currentTargetRotY, 3.5, delta);
             rotationGroupRef.current.rotation.x = THREE.MathUtils.damp(rotationGroupRef.current.rotation.x, currentTargetRotX, 3.5, delta);
             rotationGroupRef.current.rotation.z = THREE.MathUtils.damp(rotationGroupRef.current.rotation.z, currentTargetRotZ, 3.5, delta);
+
+            // Dynamic Face Logic
+            const deltaRotY = Math.abs(rotationGroupRef.current.rotation.y - prevRotY.current);
+            prevRotY.current = rotationGroupRef.current.rotation.y;
+            const rotSpeed = deltaRotY / Math.max(0.001, delta);
+
+            let faceType: 'surprised' | 'happy' | 'normal' = 'normal';
+            if (rotSpeed > 0.8 && state.clock.elapsedTime < 2.5) { // Dizzy spinning ONLY during initial intro spin
+                faceType = 'surprised';
+            } else if (stage === 'hero') { // Active friendly float stage
+                faceType = 'happy';
+            }
+
+            drawFace(ctx, faceType, state.clock.elapsedTime);
+            canvasTexture.needsUpdate = true;
         }
     });
 
@@ -277,13 +382,13 @@ export default function PicoCADModel({
         uniforms: {
             time: { value: 0 },
             map: { value: texture },
-            videoMap: { value: videoTexture },
+            videoMap: { value: canvasTexture },
             // Estimating the screen UV bounds on the atlas. You can tweak these!
             // x: minU, y: minV, z: maxU, w: maxV
             screenBounds: { value: new THREE.Vector4(0.032, 0.758, 0.438, 0.969) }
         },
         side: THREE.DoubleSide
-    }), [texture, videoTexture]);
+    }), [texture, canvasTexture]);
 
     return (
         <group ref={groupRef} {...props}>

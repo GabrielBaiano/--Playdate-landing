@@ -54,7 +54,7 @@ function App() {
                     url="/playdate.txt" 
                     textureUrl="/playdate.png" 
                     scale={1.22} 
-                    videoSrc="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                    stage={stage}
                   >
                     <Html position={[12, 5, 0]} center zIndexRange={[100, 0]}>
                       <RPGBubble 
