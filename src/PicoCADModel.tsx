@@ -2,8 +2,14 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLoader, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-export function parsePicoCAD(text: string) {
-    const geometries: THREE.BufferGeometry[] = [];
+export interface PicoCADPart {
+    geometry: THREE.BufferGeometry;
+    pos: [number, number, number];
+    rot: [number, number, number];
+}
+
+export function parsePicoCAD(text: string): PicoCADPart[] {
+    const parts: PicoCADPart[] = [];
     const objBlocks = text.split("name=");
     for (let i = 1; i < objBlocks.length; i++) {
         const block = objBlocks[i];
@@ -80,12 +86,18 @@ export function parsePicoCAD(text: string) {
         const euler = new THREE.Euler(rot[0] * Math.PI / 180, -rot[1] * Math.PI / 180, -rot[2] * Math.PI / 180);
         const quaternion = new THREE.Quaternion().setFromEuler(euler);
         geometry.applyQuaternion(quaternion);
+
+        // Translate the vertices to their absolute positions
         geometry.translate(pos[0], -pos[1], -pos[2]);
 
-        geometries.push(geometry);
+        parts.push({
+            geometry,
+            pos: [pos[0], -pos[1], -pos[2]],
+            rot: [rot[0], rot[1], rot[2]]
+        });
     }
 
-    return geometries;
+    return parts;
 }
 
 const vertexShader = `
@@ -243,11 +255,14 @@ export default function PicoCADModel({
     stage = "hero",
     ...props
 }: any) {
-    const [geometries, setGeometries] = useState<THREE.BufferGeometry[]>([]);
+    const [parts, setParts] = useState<PicoCADPart[]>([]);
     const groupRef = useRef<THREE.Group>(null);
     const rotationGroupRef = useRef<THREE.Group>(null);
+    const crankGroupRef = useRef<THREE.Group>(null);
     const texture = useLoader(THREE.TextureLoader, textureUrl);
     const prevRotY = useRef(0);
+    const crankRotRef = useRef(0);
+    const prevScrollY = useRef(0);
 
     // Create offscreen canvas reactively
     const canvas = useMemo(() => {
@@ -272,19 +287,21 @@ export default function PicoCADModel({
         texture.minFilter = THREE.NearestFilter;
         texture.colorSpace = THREE.SRGBColorSpace;
 
-        // Setup initial intro spin
-        if (rotationGroupRef.current && groupRef.current) {
+        fetch(url)
+            .then(res => res.text())
+            .then(text => {
+                setParts(parsePicoCAD(text));
+            });
+    }, [url, texture]);
+
+    useEffect(() => {
+        // Setup initial intro spin as soon as parts are loaded and rendered in the DOM
+        if (parts.length >= 3 && rotationGroupRef.current && groupRef.current) {
             rotationGroupRef.current.rotation.y = -Math.PI / 2 + Math.PI * 6; // 3 full spins starting from target
             rotationGroupRef.current.rotation.x = 0;
             groupRef.current.scale.set(0.001, 0.001, 0.001); // Start tiny for Mario 64 zoom
         }
-
-        fetch(url)
-            .then(res => res.text())
-            .then(text => {
-                setGeometries(parsePicoCAD(text));
-            });
-    }, [url, texture]);
+    }, [parts]);
 
     useFrame((state, delta) => {
         if (groupRef.current && rotationGroupRef.current) {
@@ -373,6 +390,32 @@ export default function PicoCADModel({
 
             drawFace(ctx, faceType, state.clock.elapsedTime);
             canvasTexture.needsUpdate = true;
+
+            // Interactive Winding Crank Logic
+            if (crankGroupRef.current) {
+                // 1. Calculate scrolling speed in pixels per second
+                const scrollDelta = Math.abs(scrollY - prevScrollY.current);
+                prevScrollY.current = scrollY;
+                const scrollSpeed = scrollDelta / Math.max(0.001, delta);
+
+                // 2. Compute dynamic, blended speeds:
+                // - Idle speed (almost still, 0.05 rad/s) when not scrolling and not in stage 2
+                const idleSpeed = 0.05 * (1 - ease2);
+                // - Scroll-driven speed (highly responsive, capped at 12.0 rad/s for high energy)
+                const scrollSpeedContribution = Math.min(12.0, (scrollSpeed / 80.0) * 2.5);
+                // - Initial intro spin speed (synchronizes crank with the fast entry Y-rotation)
+                const introSpinContribution = Math.min(12.0, rotSpeed * 1.0);
+                // - Continuous video-playback speed (smooth 5.0 rad/s) when zoomed in stage 2
+                const playbackSpeed = ease2 * 5.0;
+
+                // Total combined rotation speed
+                const crankSpeed = idleSpeed + scrollSpeedContribution + introSpinContribution + playbackSpeed;
+
+                crankRotRef.current += delta * crankSpeed;
+                crankGroupRef.current.rotation.z = crankRotRef.current; // Spin around the pivot Z-axis!
+                crankGroupRef.current.rotation.x = 0;
+                crankGroupRef.current.rotation.y = 0;
+            }
         }
     });
 
@@ -390,12 +433,31 @@ export default function PicoCADModel({
         side: THREE.DoubleSide
     }), [texture, canvasTexture]);
 
+    if (parts.length < 3) return null;
+
+    const bodyPart = parts[0];
+    const shaftPart = parts[1];
+    const handlePart = parts[2];
+
+    // The absolute world coordinates of the crank attachment hinge point on the side
+    const pivotX = -0.45;
+    const pivotY = 4.4;
+    const pivotZ = -7.25;
+
     return (
         <group ref={groupRef} {...props}>
             <group ref={rotationGroupRef}>
-                {geometries.map((geo, i) => (
-                    <mesh key={i} geometry={geo} material={material} />
-                ))}
+                {/* 1. Main Playdate Console Body */}
+                <mesh geometry={bodyPart.geometry} material={material} />
+
+                {/* 2. Interactive Rotating Crank (Arm and Handle rotate together around the axle socket pivot) */}
+                <group ref={crankGroupRef} position={[pivotX, pivotY, pivotZ]}>
+                    {/* Metal arm shaft rendered offset back to its absolute position */}
+                    <mesh position={[-pivotX, -pivotY, -pivotZ]} geometry={shaftPart.geometry} material={material} />
+
+                    {/* Yellow handle rendered offset back to its absolute position */}
+                    <mesh position={[-pivotX, -pivotY, -pivotZ]} geometry={handlePart.geometry} material={material} />
+                </group>
             </group>
             {children}
         </group>
