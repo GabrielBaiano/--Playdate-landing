@@ -17,15 +17,15 @@ export function RPGBubble({ text, speed = 40, direction = 'left', className = ''
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (visible && !hasTriggered) {
+    if (visible) {
       setHasTriggered(true);
       setIsTyping(true);
-    } else if (!visible) {
+    } else {
       setHasTriggered(false);
       setIsTyping(false);
       setDisplayedText('');
     }
-  }, [visible, hasTriggered]);
+  }, [visible, text]);
 
   useEffect(() => {
     if (!isTyping) return;

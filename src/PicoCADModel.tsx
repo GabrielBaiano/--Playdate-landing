@@ -169,7 +169,7 @@ void main() {
 }
 `;
 
-const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy' | 'normal' | 'dead', time: number) => {
+const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy' | 'normal' | 'ohno' | 'dead' | 'angry', time: number) => {
     // Fill background with Playdate classic screen color (retro green-grey LCD)
     ctx.fillStyle = "#b5c2a3"; // Classic Playdate retro LCD color!
     ctx.fillRect(0, 0, 400, 240);
@@ -250,7 +250,8 @@ const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy'
         ctx.moveTo(170, 180);
         ctx.lineTo(230, 180);
         ctx.stroke();
-    } else {
+        
+    } else if (faceType === 'normal') {
         // Normal open eyes (nice friendly circles with white shine!)
         // Left eye circle
         ctx.beginPath();
@@ -273,11 +274,132 @@ const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy'
         ctx.arc(262, 112, 6, 0, Math.PI * 2);
         ctx.fill();
         
-        // Friendly smile curve
+        // Friendly smile curve (no nose!)
         ctx.strokeStyle = "#1b1f1a";
         ctx.lineWidth = 8;
         ctx.beginPath();
         ctx.arc(200, 155, 15, 0.1 * Math.PI, 0.9 * Math.PI);
+        ctx.stroke();
+        
+    } else if (faceType === 'angry') {
+        // Angry angled eyebrows (V shape, very aggressive!)
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = '#1b1f1a';
+        ctx.beginPath();
+        ctx.moveTo(85, 80); ctx.lineTo(160, 105); // Left eyebrow \
+        ctx.moveTo(315, 80); ctx.lineTo(240, 105);  // Right eyebrow /
+        ctx.stroke();
+
+        // Frown lines between eyes (||)
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(188, 92); ctx.lineTo(188, 112);
+        ctx.moveTo(212, 92); ctx.lineTo(212, 112);
+        ctx.stroke();
+
+        // Sharp triangular angry eyes (thick black border, screen-colored inside)
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = '#1b1f1a';
+        ctx.fillStyle = '#b5c2a3';
+        
+        // Left eye
+        ctx.beginPath();
+        ctx.moveTo(95, 100);
+        ctx.lineTo(155, 135);
+        ctx.lineTo(165, 105);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Right eye
+        ctx.beginPath();
+        ctx.moveTo(305, 100);
+        ctx.lineTo(245, 135);
+        ctx.lineTo(235, 105);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Big wavy angry screaming mouth
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = '#1b1f1a';
+        ctx.fillStyle = '#1b1f1a'; // Deep screaming open void
+        ctx.beginPath();
+        ctx.moveTo(130, 160);
+        ctx.quadraticCurveTo(165, 140, 200, 165); // Top-left hump
+        ctx.quadraticCurveTo(235, 140, 270, 160); // Top-right hump
+        ctx.quadraticCurveTo(275, 205, 255, 215); // Right corner to bottom
+        ctx.quadraticCurveTo(200, 225, 145, 215); // Bottom center curve
+        ctx.quadraticCurveTo(125, 205, 130, 160); // Left corner back to top
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Anime vein pop symbol (💢) in the upper right forehead corner
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = '#1b1f1a';
+        ctx.lineCap = 'round';
+
+        const vx = 345;
+        const vy = 55;
+        const size = 15;
+
+        // Top-left curve of vein
+        ctx.beginPath();
+        ctx.arc(vx - size, vy - size, size, 0, Math.PI / 2, false);
+        ctx.stroke();
+
+        // Top-right curve of vein
+        ctx.beginPath();
+        ctx.arc(vx + size, vy - size, size, Math.PI / 2, Math.PI, false);
+        ctx.stroke();
+
+        // Bottom-left curve of vein
+        ctx.beginPath();
+        ctx.arc(vx - size, vy + size, size, 1.5 * Math.PI, 0, false);
+        ctx.stroke();
+
+        // Bottom-right curve of vein
+        ctx.beginPath();
+        ctx.arc(vx + size, vy + size, size, Math.PI, 1.5 * Math.PI, false);
+        ctx.stroke();
+        
+    } else if (faceType === 'ohno') {
+        // Wide scared O eyes
+        ctx.fillStyle = '#1b1f1a';
+        ctx.beginPath();
+        ctx.arc(130, 120, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#b5c2a3';
+        ctx.beginPath();
+        ctx.arc(120, 110, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1b1f1a';
+        ctx.beginPath();
+        ctx.arc(270, 120, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#b5c2a3';
+        ctx.beginPath();
+        ctx.arc(260, 110, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Open O mouth (wide open shock!)
+        ctx.fillStyle = '#1b1f1a';
+        ctx.beginPath();
+        ctx.arc(200, 185, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Beautiful 1-bit screen-authentic cartoon sweat drop (sharp outline, matching screen-color fill)
+        const sweatY = 60;
+        ctx.strokeStyle = '#1b1f1a';
+        ctx.fillStyle = '#b5c2a3';
+        ctx.lineWidth = 6;
+        
+        ctx.beginPath();
+        ctx.arc(345, sweatY + 12, 10, 0.15 * Math.PI, 0.85 * Math.PI, false); // rounded bottom
+        ctx.lineTo(345, sweatY); // sharp tip pointing up
+        ctx.closePath();
+        ctx.fill();
         ctx.stroke();
     }
 };
@@ -339,6 +461,7 @@ export default function PicoCADModel({
     scale = 1,
     children,
     stage = "hero",
+    specStage = 0,
     ...props
 }: any) {
     const [parts, setParts] = useState<PicoCADPart[]>([]);
@@ -528,6 +651,11 @@ export default function PicoCADModel({
             const scrollY = window.scrollY;
             const vh = window.innerHeight;
 
+            // Dynamic Face / Rotation speed check (Defined globally inside useFrame to avoid ReferenceErrors!)
+            const deltaRotY = Math.abs(rotationGroupRef.current.rotation.y - prevRotY.current);
+            prevRotY.current = rotationGroupRef.current.rotation.y;
+            const rotSpeed = deltaRotY / Math.max(0.001, delta);
+
             // Scroll Animation Logic
             // Stage 1: Bottom left corner
             let progress1 = 0;
@@ -536,24 +664,24 @@ export default function PicoCADModel({
             }
             const ease1 = 1 - Math.pow(1 - progress1, 3);
             
-            // Specs Section Stage: Slide to right side and rotate to show profile
-            let progressSpecs = 0;
-            if (scrollY > vh * 3.0) {
-                progressSpecs = Math.min(1, (scrollY - vh * 3.0) / (vh * 0.5)); // Finishes exactly at 3.5vh (Specs snap point)
+            // Entry smooth animation into spec stage 1 (driven by scroll, same as before)
+            let progressSpecsEntry = 0;
+            if (scrollY > vh * 1.0) {
+                progressSpecsEntry = Math.min(1, (scrollY - vh * 1.0) / (vh * 1.0));
             }
-            const easeSpecs = 1 - Math.pow(1 - progressSpecs, 3);
+            const easeSpecsEntry = 1 - Math.pow(1 - progressSpecsEntry, 3);
 
-            // Stage 3: Giant center screen zoom
+            // Stage 3: Giant center screen zoom (orange section)
             let progress2 = 0;
-            if (scrollY > vh * 6.0) {
-                progress2 = Math.min(1, (scrollY - vh * 6.0) / (vh * 1.0));
+            if (scrollY > vh * 5.0) {
+                progress2 = Math.min(1, (scrollY - vh * 5.0) / (vh * 1.0));
             }
             const ease2 = 1 - Math.pow(1 - progress2, 3);
 
-            // Gyroscopic wobble effect
+            // Gyroscopic wobble effect — fades out as we enter specs
             let currentWobbleIntensity = 1.0;
             if (ease1 > 0) currentWobbleIntensity = 1 - (ease1 * 0.85);
-            if (easeSpecs > 0) currentWobbleIntensity = THREE.MathUtils.lerp(currentWobbleIntensity, 0.4, easeSpecs);
+            if (easeSpecsEntry > 0) currentWobbleIntensity = THREE.MathUtils.lerp(currentWobbleIntensity, 0.0, easeSpecsEntry);
             if (ease2 > 0) currentWobbleIntensity = THREE.MathUtils.lerp(currentWobbleIntensity, 0, ease2);
 
             const wobbleY = Math.sin(t * 1.4) * 0.30 * currentWobbleIntensity;
@@ -580,95 +708,144 @@ export default function PicoCADModel({
                 currentTargetRotZ = wobbleZ - (ease1 * Math.PI / 16);
             }
 
-            let currentTargetFrontX = 0;
-            let currentTargetBackX = 0;
-            let currentTargetInternalsSlide = 0;
+             let currentTargetFrontX = 0;
+             let currentTargetBackX = 0;
+             let currentTargetInternalsSlide = 0;
+             let targetFaceType: 'surprised' | 'happy' | 'normal' | 'ohno' | 'dead' | 'angry' = 'normal';
+ 
+             // Fully continuous, scroll-driven specs section targets!
+             if (scrollY >= vh * 2.0) {
+                 if (scrollY < vh * 3.0) {
+                     // Spec Slide 1: closed console, looking angled, showing ohno face
+                     currentTargetX = 0;
+                     currentTargetY = 0;
+                     currentTargetScale = scale * 0.9;
+                     currentTargetRotY = -Math.PI / 2 - Math.PI * 0.26;
+                     currentTargetRotX = 0.20;
+                     currentTargetRotZ = 0;
+                     
+                     currentTargetFrontX = 0;
+                     currentTargetBackX = 0;
+                     currentTargetInternalsSlide = 0;
+                     targetFaceType = 'ohno';
+                 } else if (scrollY < vh * 4.0) {
+                     // Spec Slide 2: disassembling! Driven completely by scroll progress.
+                     const progressExplode = Math.min(1, Math.max(0, (scrollY - vh * 3.0) / vh));
+                     
+                     currentTargetX = -1.5 * progressExplode;
+                     currentTargetY = 0;
+                     currentTargetScale = scale * (0.9 - 0.10 * progressExplode);
+                     currentTargetRotY = -Math.PI / 2 - Math.PI * 0.26;
+                     currentTargetRotX = 0.20;
+                     currentTargetRotZ = 0;
+                     
+                     currentTargetFrontX = 6.0 * progressExplode;
+                     currentTargetBackX = -8.0 * progressExplode;
+                     currentTargetInternalsSlide = progressExplode;
+                     targetFaceType = progressExplode > 0.5 ? 'dead' : 'ohno';
+                 } else if (scrollY < vh * 5.0) {
+                     // Spec Slide 3: re-assembling, centering, facing camera, becoming angry!
+                     const progressAssemble = Math.min(1, Math.max(0, (scrollY - vh * 4.0) / vh));
+                     
+                     currentTargetX = -1.5 * (1 - progressAssemble);
+                     currentTargetY = 0;
+                     currentTargetScale = scale * (0.80 + 0.25 * progressAssemble);
+                     currentTargetRotY = THREE.MathUtils.lerp(-Math.PI / 2 - Math.PI * 0.26, -Math.PI / 2, progressAssemble);
+                     currentTargetRotX = THREE.MathUtils.lerp(0.20, 0, progressAssemble);
+                     currentTargetRotZ = 0;
+                     
+                     currentTargetFrontX = 6.0 * (1 - progressAssemble);
+                     currentTargetBackX = -8.0 * (1 - progressAssemble);
+                     currentTargetInternalsSlide = 1.0 * (1 - progressAssemble);
+                     targetFaceType = progressAssemble > 0.5 ? 'angry' : 'dead';
+                 } else {
+                     // End of spec slides, in the orange zone
+                     currentTargetX = 0;
+                     currentTargetY = 0;
+                     currentTargetScale = scale * 1.05;
+                     currentTargetRotY = -Math.PI / 2;
+                     currentTargetRotX = 0;
+                     currentTargetRotZ = 0;
+                     currentTargetFrontX = 0;
+                     currentTargetBackX = 0;
+                     currentTargetInternalsSlide = 0;
+                     targetFaceType = 'angry';
+                 }
+             } else {
+                 // Catalog / White Section or Hero Section
+                 if (easeSpecsEntry > 0) {
+                     currentTargetX = THREE.MathUtils.lerp(currentTargetX, 0, easeSpecsEntry);
+                     currentTargetY = THREE.MathUtils.lerp(currentTargetY, 0, easeSpecsEntry);
+                     currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 0.9, easeSpecsEntry);
+                     currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2 - Math.PI * 0.26, easeSpecsEntry);
+                     currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0.20, easeSpecsEntry);
+                     currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0.0, easeSpecsEntry);
+                 }
+                 
+                 targetFaceType = stage === 'hero' ? 'happy' : 'normal';
+                 
+                 // Keep surprised spin check
+                 // deltaRotY commented
+                 // rotSpeed commented
+                 if (rotSpeed > 0.8 && state.clock.elapsedTime < 2.5) {
+                     targetFaceType = 'surprised';
+                 }
+             }
+ 
+             // Apply Stage 3 Blends (orange zoom — overrides everything)
+             if (ease2 > 0) {
+                 currentTargetX = THREE.MathUtils.lerp(currentTargetX, 0, ease2);
+                 currentTargetY = THREE.MathUtils.lerp(currentTargetY, -16.0, ease2);
+                 currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 2.3, ease2);
+ 
+                 currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2, ease2);
+                 currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0, ease2);
+                 currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0, ease2);
+ 
+                 currentTargetFrontX = THREE.MathUtils.lerp(currentTargetFrontX, 0, ease2);
+                 currentTargetBackX = THREE.MathUtils.lerp(currentTargetBackX, 0, ease2);
+                 currentTargetInternalsSlide = THREE.MathUtils.lerp(currentTargetInternalsSlide, 0, ease2);
+                 targetFaceType = 'angry';
+             }
 
-            // Apply Specs Blends (Overrides Stage 1: Slide to center, tilt, and explode open)
-            if (easeSpecs > 0) {
-                currentTargetX = THREE.MathUtils.lerp(currentTargetX, -1.5, easeSpecs); // Shift slightly left to perfectly balance the separated components
-                currentTargetY = THREE.MathUtils.lerp(currentTargetY, 0, easeSpecs);
-                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 0.75, easeSpecs);
-
-                // "Inclinação de 90 graus" e "incline um pouco mais pra camera"
-                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2 - Math.PI * 0.26, easeSpecs);
-                currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0.30, easeSpecs); // Tilted more towards the camera
-                currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0.0, easeSpecs); // Straight upright on Z
-
-                // Open the covers along the thickness axis (X)
-                currentTargetFrontX = 6.0 * easeSpecs;
-                currentTargetBackX = -8.0 * easeSpecs;
-                currentTargetInternalsSlide = easeSpecs;
-            }
-
-            // Apply Stage 3 Blends (Overrides Specs & Stage 1: Zoom to giant center)
-            if (ease2 > 0) {
-                currentTargetX = THREE.MathUtils.lerp(currentTargetX, 0, ease2);
-                currentTargetY = THREE.MathUtils.lerp(currentTargetY, -16.0, ease2);
-                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 2.3, ease2);
-
-                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2, ease2); // perfectly forward
-                currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0, ease2);
-                currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0, ease2);
-                
-                currentTargetFrontX = THREE.MathUtils.lerp(currentTargetFrontX, 0, ease2);
-                currentTargetBackX = THREE.MathUtils.lerp(currentTargetBackX, 0, ease2);
-                currentTargetInternalsSlide = THREE.MathUtils.lerp(currentTargetInternalsSlide, 0, ease2);
-            }
-
-            // Apply final computed targets
-            groupRef.current.position.x = THREE.MathUtils.damp(groupRef.current.position.x, currentTargetX, 4.0, delta);
-            groupRef.current.position.y = THREE.MathUtils.damp(groupRef.current.position.y, currentTargetY, 4.0, delta);
+            // Apply final computed targets (Increased damping to 8.0+ for high snappiness)
+            groupRef.current.position.x = THREE.MathUtils.damp(groupRef.current.position.x, currentTargetX, 8.0, delta);
+            groupRef.current.position.y = THREE.MathUtils.damp(groupRef.current.position.y, currentTargetY, 8.0, delta);
 
             const currentScale = groupRef.current.scale.x;
-            const newScale = THREE.MathUtils.damp(currentScale, currentTargetScale, 3.5, delta);
+            const newScale = THREE.MathUtils.damp(currentScale, currentTargetScale, 8.0, delta);
             groupRef.current.scale.set(newScale, newScale, newScale);
 
-            rotationGroupRef.current.rotation.y = THREE.MathUtils.damp(rotationGroupRef.current.rotation.y, currentTargetRotY, 3.5, delta);
-            rotationGroupRef.current.rotation.x = THREE.MathUtils.damp(rotationGroupRef.current.rotation.x, currentTargetRotX, 3.5, delta);
-            rotationGroupRef.current.rotation.z = THREE.MathUtils.damp(rotationGroupRef.current.rotation.z, currentTargetRotZ, 3.5, delta);
+            rotationGroupRef.current.rotation.y = THREE.MathUtils.damp(rotationGroupRef.current.rotation.y, currentTargetRotY, 8.5, delta);
+            rotationGroupRef.current.rotation.x = THREE.MathUtils.damp(rotationGroupRef.current.rotation.x, currentTargetRotX, 8.5, delta);
+            rotationGroupRef.current.rotation.z = THREE.MathUtils.damp(rotationGroupRef.current.rotation.z, currentTargetRotZ, 8.5, delta);
 
             if (frontRef.current) {
-                frontRef.current.position.x = THREE.MathUtils.damp(frontRef.current.position.x, currentTargetFrontX, 3.5, delta);
+                frontRef.current.position.x = THREE.MathUtils.damp(frontRef.current.position.x, currentTargetFrontX, 9.0, delta);
             }
             if (backRef.current) {
-                backRef.current.position.x = THREE.MathUtils.damp(backRef.current.position.x, currentTargetBackX, 3.5, delta);
+                backRef.current.position.x = THREE.MathUtils.damp(backRef.current.position.x, currentTargetBackX, 9.0, delta);
             }
             if (internalsRef.current) {
-                // Ensure internals are always fully scaled so they don't pop into existence
                 internalsRef.current.scale.setScalar(1);
-                
-                // Track the smooth slide multiplier
+
                 const prevSlide = internalsRef.current.userData.slide || 0;
-                const newSlide = THREE.MathUtils.damp(prevSlide, currentTargetInternalsSlide, 3.5, delta);
+                const newSlide = THREE.MathUtils.damp(prevSlide, currentTargetInternalsSlide, 9.0, delta);
                 internalsRef.current.userData.slide = newSlide;
-                
-                // Só mostra os itens internos quando a explosão começar (evita clipar na tela inicial)
-                internalsRef.current.visible = newSlide > 0.05;
-                
-                // Slide each internal component out to its defined absolute target relative to its base position
-                internalsRef.current.traverse(child => {
-                    if (child.userData && child.userData.baseX !== undefined && child.userData.targetX !== undefined) {
-                        child.position.x = THREE.MathUtils.lerp(child.userData.baseX, child.userData.targetX, newSlide);
-                    }
-                });
+
+                // Internals visible whenever we start to explode (Front cover starts to separate)
+                internalsRef.current.visible = currentTargetFrontX > 0.1;
+                if (currentTargetFrontX > 0.1) {
+                    internalsRef.current.traverse(child => {
+                        if (child.userData && child.userData.baseX !== undefined && child.userData.targetX !== undefined) {
+                            child.position.x = THREE.MathUtils.lerp(child.userData.baseX, child.userData.targetX, newSlide);
+                        }
+                    });
+                }
             }
 
-            // Dynamic Face Logic
-            const deltaRotY = Math.abs(rotationGroupRef.current.rotation.y - prevRotY.current);
-            prevRotY.current = rotationGroupRef.current.rotation.y;
-            const rotSpeed = deltaRotY / Math.max(0.001, delta);
-
-            let faceType: 'surprised' | 'happy' | 'normal' | 'dead' = 'normal';
-            if (rotSpeed > 0.8 && state.clock.elapsedTime < 2.5) { // Dizzy spinning ONLY during initial intro spin
-                faceType = 'surprised';
-            } else if (stage === 'hero') { // Active friendly float stage
-                faceType = 'happy';
-            } else if (easeSpecs > 0.5 && ease2 < 0.5) { // Dead when exploded in specs section
-                faceType = 'dead';
-            }
-
-            drawFace(ctx, faceType, state.clock.elapsedTime);
+            // Dynamic Face Logic (Using scroll-driven targetFaceType!)
+            drawFace(ctx, targetFaceType, state.clock.elapsedTime);
             canvasTexture.needsUpdate = true;
 
             // Interactive Winding Crank Logic
@@ -689,9 +866,18 @@ export default function PicoCADModel({
                 const playbackSpeed = ease2 * 5.0;
 
                 // Total combined rotation speed
-                const crankSpeed = idleSpeed + scrollSpeedContribution + introSpinContribution + playbackSpeed;
+                let crankSpeed = idleSpeed + scrollSpeedContribution + introSpinContribution + playbackSpeed;
 
-                crankRotRef.current += delta * crankSpeed;
+                // Stop crank from spinning when console is disassembled (stage 2)
+                if (specStage === 2) {
+                    crankSpeed = 0;
+                    // Align to nearest multiple of 2*PI (vertical) to prevent wild rewind spins!
+                    const nearestAlign = Math.round(crankRotRef.current / (2 * Math.PI)) * (2 * Math.PI);
+                    crankRotRef.current = THREE.MathUtils.damp(crankRotRef.current, nearestAlign, 6.0, delta);
+                } else {
+                    crankRotRef.current += delta * crankSpeed;
+                }
+
                 crankGroupRef.current.rotation.z = crankRotRef.current; // Spin around the pivot Z-axis!
                 crankGroupRef.current.rotation.x = 0;
                 crankGroupRef.current.rotation.y = 0;

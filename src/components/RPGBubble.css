@@ -7,7 +7,7 @@
   border-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 42 42'><rect x='0' y='12' width='6' height='18' fill='black'/><rect x='6' y='6' width='6' height='6' fill='black'/><rect x='6' y='30' width='6' height='6' fill='black'/><rect x='12' y='0' width='18' height='6' fill='black'/><rect x='12' y='36' width='18' height='6' fill='black'/><rect x='30' y='6' width='6' height='6' fill='black'/><rect x='30' y='30' width='6' height='6' fill='black'/><rect x='36' y='12' width='6' height='18' fill='black'/><rect x='12' y='6' width='18' height='30' fill='white'/><rect x='6' y='12' width='6' height='18' fill='white'/><rect x='30' y='12' width='6' height='18' fill='white'/></svg>") 18 fill stretch;
   padding: 1.5rem 2rem;
   box-shadow: none; /* Removed shadow */
-  display: inline-block;
+  display: none; /* Completely hidden by default — no bleed-through */
   min-height: 120px;
   max-width: 90vw;
   image-rendering: pixelated;
@@ -16,11 +16,12 @@
   /* Smooth exit/entrance animations */
   opacity: 0;
   transform: scale(0);
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s ease-in-out;
   pointer-events: none; /* Disable interaction when hidden */
 }
 
 .rpg-bubble.rpg-bubble-visible {
+  display: inline-block; /* Only rendered when actually visible */
   opacity: 1;
   transform: scale(1);
   pointer-events: auto;

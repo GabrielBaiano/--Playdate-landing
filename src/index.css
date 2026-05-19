@@ -248,16 +248,14 @@ body::before {
 .white-section {
   position: relative;
   z-index: 5; /* Behind the 3D model */
-  background-color: #ffffff; /* Clean white background */
+  background-color: #ffffff; /* Solid white background that acts as a curtain! */
   width: 100%;
-  height: 250vh; /* Tall enough to allow a long scroll animation */
+  height: 100vh; /* Exactly 100vh full screen section that scrolls normally! */
   padding: 0;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
 }
 
 .white-sticky-content {
-  position: sticky;
-  top: 0;
+  position: relative; /* Normal relative positioning so it physically scrolls with the page! */
   width: 100%;
   height: 100vh;
   display: flex;
@@ -513,28 +511,53 @@ body::before {
   }
 }
 
-/* Specs Section */
-.specs-section {
-  position: relative;
-  z-index: 5;
-  /* Classic blueprint: vivid cobalt blue paper + white grid lines */
+/* Fixed white overlay for smooth catalog cross-fade */
+.white-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 3; /* Behind blueprint-overlay (z-index: 4) */
+  background-color: #ffffff;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Fixed blueprint overlay — shown during spec stages, locked to viewport */
+.blueprint-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2; /* Behind the white scrolling curtain (z-index: 5) */
   background-color: #1464c0;
   background-image:
-    /* Fine white grid (small 40px cells) */
     linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px),
-    /* Major white grid (large 200px cells) */
     linear-gradient(rgba(255, 255, 255, 0.40) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.40) 1px, transparent 1px);
-  background-size:
-    40px 40px,
-    40px 40px,
-    200px 200px,
-    200px 200px;
+  background-size: 40px 40px, 40px 40px, 200px 200px, 200px 200px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.blueprint-overlay.blueprint-visible {
+  opacity: 1;
+}
+
+/* Spec slides — transparent, just scroll scaffolding */
+.spec-slide {
+  position: relative;
+  z-index: 5;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: transparent;
   width: 100%;
-  height: 280vh;
+  height: 100vh;
   padding: 0;
-  box-shadow: 0 -10px 60px rgba(0, 0, 0, 0.4);
 }
 
 .specs-sticky-content {
