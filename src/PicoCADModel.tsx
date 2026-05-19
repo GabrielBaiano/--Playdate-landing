@@ -133,10 +133,12 @@ void main() {
     vec4 texColor = texture2D(map, vUv);
     if (texColor.a < 0.1) discard;
     
+    bool isScreen = false;
     // Replace screen pixels with canvas face texture
     if (vUv.x >= screenBounds.x && vUv.x <= screenBounds.z && 
         vUv.y >= screenBounds.y && vUv.y <= screenBounds.w) {
         
+        isScreen = true;
         vec2 vidUv = vec2(
             (vUv.x - screenBounds.x) / (screenBounds.z - screenBounds.x),
             (vUv.y - screenBounds.y) / (screenBounds.w - screenBounds.y)
@@ -146,12 +148,28 @@ void main() {
         texColor = vidColor;
     }
     
-    // Set shader shadow multiplier to 1.0 to remove dithered shadows on 3D elements
-    gl_FragColor = vec4(texColor.rgb, 1.0);
+    // Calculate simple flat lighting based on normals
+    vec3 n = normalize(vNormal);
+    if (!gl_FrontFacing) n = -n; // Fix inverted picoCAD normals!
+    
+    vec3 lightDir = normalize(vec3(-0.2, 0.8, 1.0)); // Light from top, slightly left
+    float ndotl = max(0.0, dot(n, lightDir));
+    
+    // Create a stepped shadow multiplier (retro flat shading style)
+    float shadowMult = 1.0;
+    if (ndotl < 0.25) {
+        shadowMult = 0.65; // Dark shadow
+    } else if (ndotl < 0.65) {
+        shadowMult = 0.85; // Mid tone
+    }
+    
+    if (isScreen) shadowMult = 1.0; // The screen emits its own light!
+    
+    gl_FragColor = vec4(texColor.rgb * shadowMult, 1.0);
 }
 `;
 
-const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy' | 'normal', time: number) => {
+const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy' | 'normal' | 'dead', time: number) => {
     // Fill background with Playdate classic screen color (retro green-grey LCD)
     ctx.fillStyle = "#b5c2a3"; // Classic Playdate retro LCD color!
     ctx.fillRect(0, 0, 400, 240);
@@ -215,6 +233,23 @@ const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy'
         ctx.arc(200, 160, 20, 0, Math.PI);
         ctx.stroke();
         
+    } else if (faceType === 'dead') {
+        // X X eyes
+        ctx.lineWidth = 14;
+        ctx.beginPath();
+        // Left X
+        ctx.moveTo(110, 100); ctx.lineTo(150, 140);
+        ctx.moveTo(150, 100); ctx.lineTo(110, 140);
+        // Right X
+        ctx.moveTo(250, 100); ctx.lineTo(290, 140);
+        ctx.moveTo(290, 100); ctx.lineTo(250, 140);
+        ctx.stroke();
+        
+        // Dead straight mouth
+        ctx.beginPath();
+        ctx.moveTo(170, 180);
+        ctx.lineTo(230, 180);
+        ctx.stroke();
     } else {
         // Normal open eyes (nice friendly circles with white shine!)
         // Left eye circle
@@ -247,6 +282,57 @@ const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy'
     }
 };
 
+function splitGeometryByX3(geom: THREE.BufferGeometry) {
+    geom.computeBoundingBox();
+    const box = geom.boundingBox!;
+    // Front cover (screen side)
+    const splitFront = box.max.x - (box.max.x - box.min.x) * 0.15;
+    // Back cover (playdate logo side)
+    const splitBack = box.min.x + (box.max.x - box.min.x) * 0.15;
+    
+    const pos = geom.attributes.position.array as Float32Array;
+    const uv = geom.attributes.uv.array as Float32Array;
+    const norm = geom.attributes.normal ? (geom.attributes.normal.array as Float32Array) : null;
+    
+    const frontPos = [], frontUv = [], frontNorm = [];
+    const midPos = [], midUv = [], midNorm = [];
+    const backPos = [], backUv = [], backNorm = [];
+    
+    for (let i = 0; i < pos.length; i += 9) {
+        const x = (pos[i] + pos[i+3] + pos[i+6]) / 3;
+        
+        if (x > splitFront) {
+            frontPos.push(pos[i], pos[i+1], pos[i+2], pos[i+3], pos[i+4], pos[i+5], pos[i+6], pos[i+7], pos[i+8]);
+            frontUv.push(uv[(i/3)*2], uv[(i/3)*2+1], uv[(i/3)*2+2], uv[(i/3)*2+3], uv[(i/3)*2+4], uv[(i/3)*2+5]);
+            if (norm) frontNorm.push(norm[i], norm[i+1], norm[i+2], norm[i+3], norm[i+4], norm[i+5], norm[i+6], norm[i+7], norm[i+8]);
+        } else if (x < splitBack) {
+            backPos.push(pos[i], pos[i+1], pos[i+2], pos[i+3], pos[i+4], pos[i+5], pos[i+6], pos[i+7], pos[i+8]);
+            backUv.push(uv[(i/3)*2], uv[(i/3)*2+1], uv[(i/3)*2+2], uv[(i/3)*2+3], uv[(i/3)*2+4], uv[(i/3)*2+5]);
+            if (norm) backNorm.push(norm[i], norm[i+1], norm[i+2], norm[i+3], norm[i+4], norm[i+5], norm[i+6], norm[i+7], norm[i+8]);
+        } else {
+            midPos.push(pos[i], pos[i+1], pos[i+2], pos[i+3], pos[i+4], pos[i+5], pos[i+6], pos[i+7], pos[i+8]);
+            midUv.push(uv[(i/3)*2], uv[(i/3)*2+1], uv[(i/3)*2+2], uv[(i/3)*2+3], uv[(i/3)*2+4], uv[(i/3)*2+5]);
+            if (norm) midNorm.push(norm[i], norm[i+1], norm[i+2], norm[i+3], norm[i+4], norm[i+5], norm[i+6], norm[i+7], norm[i+8]);
+        }
+    }
+    
+    const createGeom = (p: number[], u: number[], n: number[]) => {
+        const g = new THREE.BufferGeometry();
+        if (p.length > 0) {
+            g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
+            g.setAttribute('uv', new THREE.Float32BufferAttribute(u, 2));
+            if (norm) g.setAttribute('normal', new THREE.Float32BufferAttribute(n, 3));
+        }
+        return g;
+    };
+    
+    return { 
+        front: createGeom(frontPos, frontUv, frontNorm), 
+        mid: createGeom(midPos, midUv, midNorm), 
+        back: createGeom(backPos, backUv, backNorm) 
+    };
+}
+
 export default function PicoCADModel({
     url,
     textureUrl,
@@ -259,6 +345,10 @@ export default function PicoCADModel({
     const groupRef = useRef<THREE.Group>(null);
     const rotationGroupRef = useRef<THREE.Group>(null);
     const crankGroupRef = useRef<THREE.Group>(null);
+    const frontRef = useRef<THREE.Group>(null);
+    const midRef = useRef<THREE.Group>(null);
+    const backRef = useRef<THREE.Group>(null);
+    const internalsRef = useRef<THREE.Group>(null);
     const texture = useLoader(THREE.TextureLoader, textureUrl);
     const prevRotY = useRef(0);
     const crankRotRef = useRef(0);
@@ -281,6 +371,45 @@ export default function PicoCADModel({
         tex.colorSpace = THREE.SRGBColorSpace;
         return tex;
     }, [canvas]);
+
+    const { front, mid, back } = useMemo(() => {
+        if (parts.length < 3) return { front: null, mid: null, back: null };
+        return splitGeometryByX3(parts[0].geometry);
+    }, [parts]);
+
+    const internals = useMemo(() => {
+        const inst = new THREE.Group();
+        const chipMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+        const screwMat = new THREE.MeshBasicMaterial({ color: 0x999999 });
+        const wireMat = new THREE.MeshBasicMaterial({ color: 0xcc3333 });
+        
+        // Chips
+        const boxGeom = new THREE.BoxGeometry(1, 1, 1);
+        for(let i=0; i<6; i++) {
+            const mesh = new THREE.Mesh(boxGeom, chipMat);
+            mesh.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*14, (Math.random()-0.5)*8);
+            mesh.scale.set(0.2 + Math.random()*0.5, 1+Math.random()*3, 1+Math.random()*3);
+            mesh.rotation.set(Math.random(), Math.random(), Math.random());
+            inst.add(mesh);
+        }
+        // Screws
+        const cylGeom = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 6);
+        for(let i=0; i<8; i++) {
+            const mesh = new THREE.Mesh(cylGeom, screwMat);
+            mesh.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*18, (Math.random()-0.5)*10);
+            mesh.rotation.set(Math.random(), Math.random(), Math.random());
+            inst.add(mesh);
+        }
+        // Cut cables
+        const wireGeom = new THREE.CylinderGeometry(0.15, 0.15, 4, 4);
+        for(let i=0; i<5; i++) {
+            const mesh = new THREE.Mesh(wireGeom, wireMat);
+            mesh.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*16, (Math.random()-0.5)*8);
+            mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+            inst.add(mesh);
+        }
+        return inst;
+    }, []);
 
     useEffect(() => {
         texture.magFilter = THREE.NearestFilter;
@@ -319,8 +448,8 @@ export default function PicoCADModel({
 
             // Specs Section Stage: Slide to right side and rotate to show profile
             let progressSpecs = 0;
-            if (scrollY > vh * 3.1) {
-                progressSpecs = Math.min(1, (scrollY - vh * 3.1) / (vh * 0.6));
+            if (scrollY > vh * 3.0) {
+                progressSpecs = Math.min(1, (scrollY - vh * 3.0) / (vh * 0.5)); // Finishes exactly at 3.5vh (Specs snap point)
             }
             const easeSpecs = 1 - Math.pow(1 - progressSpecs, 3);
 
@@ -361,16 +490,25 @@ export default function PicoCADModel({
                 currentTargetRotZ = wobbleZ - (ease1 * Math.PI / 16);
             }
 
-            // Apply Specs Blends (Overrides Stage 1: Slide to right side and rotate to show profile)
-            if (easeSpecs > 0) {
-                currentTargetX = THREE.MathUtils.lerp(currentTargetX, 14.5, easeSpecs);
-                currentTargetY = THREE.MathUtils.lerp(currentTargetY, -2.0, easeSpecs);
-                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 1.25, easeSpecs);
+            let currentTargetFrontX = 0;
+            let currentTargetBackX = 0;
+            let currentTargetInternalsScale = 0;
 
-                // Rotate it significantly on Y to showcase the slim 9mm profile and crank hinge!
-                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2 + Math.PI * 0.65, easeSpecs);
-                currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0.05, easeSpecs);
-                currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, -0.05, easeSpecs);
+            // Apply Specs Blends (Overrides Stage 1: Slide to center, tilt, and explode open)
+            if (easeSpecs > 0) {
+                currentTargetX = THREE.MathUtils.lerp(currentTargetX, -1.5, easeSpecs); // Shift slightly left to perfectly balance the separated components
+                currentTargetY = THREE.MathUtils.lerp(currentTargetY, 0, easeSpecs);
+                currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 0.75, easeSpecs);
+
+                // "Inclinação de 90 graus" e "incline um pouco mais pra camera"
+                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2 - Math.PI * 0.35, easeSpecs);
+                currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0.30, easeSpecs); // Tilted more towards the camera
+                currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0.0, easeSpecs); // Straight upright on Z
+
+                // Open the covers along the thickness axis (X)
+                currentTargetFrontX = 6.0 * easeSpecs;
+                currentTargetBackX = -8.0 * easeSpecs;
+                currentTargetInternalsScale = easeSpecs;
             }
 
             // Apply Stage 3 Blends (Overrides Specs & Stage 1: Zoom to giant center)
@@ -382,6 +520,10 @@ export default function PicoCADModel({
                 currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2, ease2); // perfectly forward
                 currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0, ease2);
                 currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0, ease2);
+                
+                currentTargetFrontX = THREE.MathUtils.lerp(currentTargetFrontX, 0, ease2);
+                currentTargetBackX = THREE.MathUtils.lerp(currentTargetBackX, 0, ease2);
+                currentTargetInternalsScale = THREE.MathUtils.lerp(currentTargetInternalsScale, 0, ease2);
             }
 
             // Apply final computed targets
@@ -396,16 +538,28 @@ export default function PicoCADModel({
             rotationGroupRef.current.rotation.x = THREE.MathUtils.damp(rotationGroupRef.current.rotation.x, currentTargetRotX, 3.5, delta);
             rotationGroupRef.current.rotation.z = THREE.MathUtils.damp(rotationGroupRef.current.rotation.z, currentTargetRotZ, 3.5, delta);
 
+            if (frontRef.current) {
+                frontRef.current.position.x = THREE.MathUtils.damp(frontRef.current.position.x, currentTargetFrontX, 3.5, delta);
+            }
+            if (backRef.current) {
+                backRef.current.position.x = THREE.MathUtils.damp(backRef.current.position.x, currentTargetBackX, 3.5, delta);
+            }
+            if (internalsRef.current) {
+                internalsRef.current.scale.setScalar(THREE.MathUtils.damp(internalsRef.current.scale.x, currentTargetInternalsScale, 3.5, delta));
+            }
+
             // Dynamic Face Logic
             const deltaRotY = Math.abs(rotationGroupRef.current.rotation.y - prevRotY.current);
             prevRotY.current = rotationGroupRef.current.rotation.y;
             const rotSpeed = deltaRotY / Math.max(0.001, delta);
 
-            let faceType: 'surprised' | 'happy' | 'normal' = 'normal';
+            let faceType: 'surprised' | 'happy' | 'normal' | 'dead' = 'normal';
             if (rotSpeed > 0.8 && state.clock.elapsedTime < 2.5) { // Dizzy spinning ONLY during initial intro spin
                 faceType = 'surprised';
             } else if (stage === 'hero') { // Active friendly float stage
                 faceType = 'happy';
+            } else if (easeSpecs > 0.5 && ease2 < 0.5) { // Dead when exploded in specs section
+                faceType = 'dead';
             }
 
             drawFace(ctx, faceType, state.clock.elapsedTime);
@@ -467,16 +621,30 @@ export default function PicoCADModel({
     return (
         <group ref={groupRef} {...props}>
             <group ref={rotationGroupRef}>
-                {/* 1. Main Playdate Console Body */}
-                <mesh geometry={bodyPart.geometry} material={material} />
+                {/* Front Cover */}
+                <group ref={frontRef}>
+                    {front && <mesh geometry={front} material={material} />}
+                </group>
+                
+                {/* Mid Frame + Internals + Crank */}
+                <group ref={midRef}>
+                    {mid && <mesh geometry={mid} material={material} />}
+                    
+                    {/* Exploding Internals (Chips, screws, cables) */}
+                    <group ref={internalsRef} scale={0}>
+                        <primitive object={internals} />
+                    </group>
 
-                {/* 2. Interactive Rotating Crank (Arm and Handle rotate together around the axle socket pivot) */}
-                <group ref={crankGroupRef} position={[pivotX, pivotY, pivotZ]}>
-                    {/* Metal arm shaft rendered offset back to its absolute position */}
-                    <mesh position={[-pivotX, -pivotY, -pivotZ]} geometry={shaftPart.geometry} material={material} />
+                    {/* Interactive Rotating Crank */}
+                    <group ref={crankGroupRef} position={[pivotX, pivotY, pivotZ]}>
+                        <mesh position={[-pivotX, -pivotY, -pivotZ]} geometry={shaftPart.geometry} material={material} />
+                        <mesh position={[-pivotX, -pivotY, -pivotZ]} geometry={handlePart.geometry} material={material} />
+                    </group>
+                </group>
 
-                    {/* Yellow handle rendered offset back to its absolute position */}
-                    <mesh position={[-pivotX, -pivotY, -pivotZ]} geometry={handlePart.geometry} material={material} />
+                {/* Back Cover */}
+                <group ref={backRef}>
+                    {back && <mesh geometry={back} material={material} />}
                 </group>
             </group>
             {children}

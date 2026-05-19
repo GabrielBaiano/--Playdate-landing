@@ -142,6 +142,8 @@ function App() {
 
             </div>
           </div>
+          {/* Invisible snap point to gracefully catch the user when scrolling backwards from Specs */}
+          <div style={{ position: 'absolute', bottom: 0, height: '100vh', width: '100%', scrollSnapAlign: 'end', pointerEvents: 'none' }}></div>
         </section>
 
         <section className="specs-section">
