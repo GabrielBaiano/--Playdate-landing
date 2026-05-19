@@ -379,35 +379,124 @@ export default function PicoCADModel({
 
     const internals = useMemo(() => {
         const inst = new THREE.Group();
-        const chipMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
-        const screwMat = new THREE.MeshBasicMaterial({ color: 0x999999 });
-        const wireMat = new THREE.MeshBasicMaterial({ color: 0xcc3333 });
         
-        // Chips
-        const boxGeom = new THREE.BoxGeometry(1, 1, 1);
-        for(let i=0; i<6; i++) {
-            const mesh = new THREE.Mesh(boxGeom, chipMat);
-            mesh.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*14, (Math.random()-0.5)*8);
-            mesh.scale.set(0.2 + Math.random()*0.5, 1+Math.random()*3, 1+Math.random()*3);
-            mesh.rotation.set(Math.random(), Math.random(), Math.random());
-            inst.add(mesh);
+        // --- STRUCTURED INTERNALS (PCB, Battery, Chips) ---
+        const pcbMat = new THREE.MeshBasicMaterial({ color: 0x1b4428 }); // Dark green PCB
+        const chipMat = new THREE.MeshBasicMaterial({ color: 0x111111 }); // Black chips
+        const batteryMat = new THREE.MeshBasicMaterial({ color: 0x999999 }); // Silver battery
+        const portMat = new THREE.MeshBasicMaterial({ color: 0x777777 }); // Silver USB-C
+        const goldMat = new THREE.MeshBasicMaterial({ color: 0xd4af37 }); // Gold contacts
+        
+        // Grouping items so they can slide independently!
+        const pcbGroup = new THREE.Group();
+        pcbGroup.userData.baseX = -2.0;
+        pcbGroup.userData.targetX = -4.5; // Entre o meio e a tampa traseira, totalmente desprendido
+        pcbGroup.position.set(-2.0, 0, 0);
+        
+        const batteryGroup = new THREE.Group();
+        batteryGroup.userData.baseX = -2.0;
+        batteryGroup.userData.targetX = -6.5; // Logo atrás da placa verde
+        batteryGroup.position.set(-2.0, 0, 0);
+        
+        const screwGroup = new THREE.Group();
+        screwGroup.userData.baseX = -2.0;
+        screwGroup.userData.targetX = -12.0; // Fica a uma distância elegante (2 unidades) atrás da tampa amarela
+        screwGroup.position.set(-2.0, 0, 0);
+        
+        // 1. Main Motherboard (T-shaped using two boxes)
+        const boardTopGeom = new THREE.BoxGeometry(0.2, 6.0, 14.0);
+        const boardTop = new THREE.Mesh(boardTopGeom, pcbMat);
+        boardTop.position.set(0, 8.0, 2.28);
+        pcbGroup.add(boardTop);
+
+        const boardBotGeom = new THREE.BoxGeometry(0.2, 5.0, 8.0);
+        const boardBot = new THREE.Mesh(boardBotGeom, pcbMat);
+        boardBot.position.set(0, 2.5, 2.28);
+        pcbGroup.add(boardBot);
+
+        // 2. Battery Pack (Thick silver rectangle behind the PCB)
+        const batteryGeom = new THREE.BoxGeometry(1.2, 6.0, 8.0);
+        const battery = new THREE.Mesh(batteryGeom, batteryMat);
+        battery.position.set(0, 8.0, 4.0);
+        batteryGroup.add(battery);
+        
+        // Battery warning label (dark grey strip)
+        const labelGeom = new THREE.BoxGeometry(1.25, 4.0, 6.0);
+        const label = new THREE.Mesh(labelGeom, new THREE.MeshBasicMaterial({ color: 0x333333 }));
+        label.position.set(0, 8.0, 4.0);
+        batteryGroup.add(label);
+
+        // 3. Processing Chips (Mounted on the FRONT of the PCB to sit between front cover and PCB)
+        const chipGeom = new THREE.BoxGeometry(0.3, 1.0, 1.0);
+        
+        // Main CPU
+        const cpu = new THREE.Mesh(chipGeom, chipMat);
+        cpu.scale.set(1.0, 3.5, 3.5);
+        cpu.position.set(0.3, 8.5, 2.28); // Positive X = sticking towards the front cover!
+        pcbGroup.add(cpu);
+
+        // RAM / Flash Memory
+        const ram1 = new THREE.Mesh(chipGeom, chipMat);
+        ram1.scale.set(1.0, 2.0, 2.5);
+        ram1.position.set(0.3, 6.0, 4.5);
+        pcbGroup.add(ram1);
+
+        const ram2 = new THREE.Mesh(chipGeom, chipMat);
+        ram2.scale.set(1.0, 2.0, 2.5);
+        ram2.position.set(0.3, 6.0, 0.0);
+        pcbGroup.add(ram2);
+        
+        // Small controller chip
+        const ctrl = new THREE.Mesh(chipGeom, chipMat);
+        ctrl.scale.set(1.0, 1.5, 1.5);
+        ctrl.position.set(0.3, 2.5, 2.28);
+        pcbGroup.add(ctrl);
+
+        // 4. USB-C Port at the bottom of the PCB
+        const portGeom = new THREE.BoxGeometry(0.5, 1.0, 2.5);
+        const port = new THREE.Mesh(portGeom, portMat);
+        port.position.set(0, -0.5, 2.28);
+        pcbGroup.add(port);
+        
+        // 5. Gold Contact Pads
+        const padGeom = new THREE.BoxGeometry(0.3, 0.4, 0.4);
+        for(let i=0; i<4; i++) {
+            const pad = new THREE.Mesh(padGeom, goldMat);
+            pad.position.set(0.1, 10.0, 0.0 + i*1.5);
+            pcbGroup.add(pad);
         }
-        // Screws
-        const cylGeom = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 6);
-        for(let i=0; i<8; i++) {
+
+        // 6. 4 Screws in the corners
+        const cylGeom = new THREE.CylinderGeometry(0.12, 0.12, 1.6, 6);
+        const screwMat = new THREE.MeshBasicMaterial({ color: 0x999999 });
+        const screwHeadGeom = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 6);
+        
+        // Exact absolute corners derived from the model's true geometry!
+        const screwPositions = [
+            [11.4, 9.0],    // Top-Left (Y, Z)
+            [11.4, -4.4],    // Top-Right
+            [-1.4, 9.0],    // Bottom-Left
+            [-1.4, -4.4]     // Bottom-Right
+        ];
+        
+        screwPositions.forEach(pos => {
+            // Screw body
             const mesh = new THREE.Mesh(cylGeom, screwMat);
-            mesh.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*18, (Math.random()-0.5)*10);
-            mesh.rotation.set(Math.random(), Math.random(), Math.random());
-            inst.add(mesh);
-        }
-        // Cut cables
-        const wireGeom = new THREE.CylinderGeometry(0.15, 0.15, 4, 4);
-        for(let i=0; i<5; i++) {
-            const mesh = new THREE.Mesh(wireGeom, wireMat);
-            mesh.position.set((Math.random()-0.5)*2, (Math.random()-0.5)*16, (Math.random()-0.5)*8);
-            mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
-            inst.add(mesh);
-        }
+            mesh.position.set(0, pos[0], pos[1]);
+            mesh.rotation.z = Math.PI / 2; // Point along X axis
+            screwGroup.add(mesh);
+            
+            // Screw head (at the furthest back end of the screw)
+            const head = new THREE.Mesh(screwHeadGeom, screwMat);
+            head.position.set(-0.8, pos[0], pos[1]);
+            head.rotation.z = Math.PI / 2;
+            screwGroup.add(head);
+        });
+
+        inst.add(pcbGroup);
+        inst.add(batteryGroup);
+        inst.add(screwGroup);
+        
         return inst;
     }, []);
 
@@ -430,6 +519,7 @@ export default function PicoCADModel({
             rotationGroupRef.current.rotation.x = 0;
             groupRef.current.scale.set(0.001, 0.001, 0.001); // Start tiny for Mario 64 zoom
         }
+        
     }, [parts]);
 
     useFrame((state, delta) => {
@@ -445,7 +535,7 @@ export default function PicoCADModel({
                 progress1 = Math.min(1, (scrollY - vh * 0.4) / (vh * 0.6));
             }
             const ease1 = 1 - Math.pow(1 - progress1, 3);
-
+            
             // Specs Section Stage: Slide to right side and rotate to show profile
             let progressSpecs = 0;
             if (scrollY > vh * 3.0) {
@@ -492,7 +582,7 @@ export default function PicoCADModel({
 
             let currentTargetFrontX = 0;
             let currentTargetBackX = 0;
-            let currentTargetInternalsScale = 0;
+            let currentTargetInternalsSlide = 0;
 
             // Apply Specs Blends (Overrides Stage 1: Slide to center, tilt, and explode open)
             if (easeSpecs > 0) {
@@ -508,7 +598,7 @@ export default function PicoCADModel({
                 // Open the covers along the thickness axis (X)
                 currentTargetFrontX = 6.0 * easeSpecs;
                 currentTargetBackX = -8.0 * easeSpecs;
-                currentTargetInternalsScale = easeSpecs;
+                currentTargetInternalsSlide = easeSpecs;
             }
 
             // Apply Stage 3 Blends (Overrides Specs & Stage 1: Zoom to giant center)
@@ -523,7 +613,7 @@ export default function PicoCADModel({
                 
                 currentTargetFrontX = THREE.MathUtils.lerp(currentTargetFrontX, 0, ease2);
                 currentTargetBackX = THREE.MathUtils.lerp(currentTargetBackX, 0, ease2);
-                currentTargetInternalsScale = THREE.MathUtils.lerp(currentTargetInternalsScale, 0, ease2);
+                currentTargetInternalsSlide = THREE.MathUtils.lerp(currentTargetInternalsSlide, 0, ease2);
             }
 
             // Apply final computed targets
@@ -545,7 +635,23 @@ export default function PicoCADModel({
                 backRef.current.position.x = THREE.MathUtils.damp(backRef.current.position.x, currentTargetBackX, 3.5, delta);
             }
             if (internalsRef.current) {
-                internalsRef.current.scale.setScalar(THREE.MathUtils.damp(internalsRef.current.scale.x, currentTargetInternalsScale, 3.5, delta));
+                // Ensure internals are always fully scaled so they don't pop into existence
+                internalsRef.current.scale.setScalar(1);
+                
+                // Track the smooth slide multiplier
+                const prevSlide = internalsRef.current.userData.slide || 0;
+                const newSlide = THREE.MathUtils.damp(prevSlide, currentTargetInternalsSlide, 3.5, delta);
+                internalsRef.current.userData.slide = newSlide;
+                
+                // Só mostra os itens internos quando a explosão começar (evita clipar na tela inicial)
+                internalsRef.current.visible = newSlide > 0.05;
+                
+                // Slide each internal component out to its defined absolute target relative to its base position
+                internalsRef.current.traverse(child => {
+                    if (child.userData && child.userData.baseX !== undefined && child.userData.targetX !== undefined) {
+                        child.position.x = THREE.MathUtils.lerp(child.userData.baseX, child.userData.targetX, newSlide);
+                    }
+                });
             }
 
             // Dynamic Face Logic
