@@ -375,9 +375,6 @@ body::before {
   width: 100%;
   overflow: hidden;
   user-select: none;
-  /* Smooth horizontal fade out on edges */
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
 
 .carousel-track {
@@ -394,17 +391,16 @@ body::before {
   width: 230px; /* Standard wide size */
   height: 138px; /* 1.66 Playdate aspect ratio */
   flex-shrink: 0;
-  background-color: #000000;
-  border: 3.5px solid #000000;
-  box-shadow: 5px 5px 0px #000000;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: 8px;
 }
 
 .carousel-game-card:hover {
-  transform: scale(1.05) translate(-2px, -2px);
-  box-shadow: 7px 7px 0px #000000;
+  transform: scale(1.05);
 }
 
 .carousel-game-card img {
@@ -430,13 +426,13 @@ body::before {
     transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(calc(-25% - 0.4rem), 0, 0);
   }
 }
 
 @keyframes scroll-right-kf {
   0% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(calc(-25% - 0.4rem), 0, 0);
   }
   100% {
     transform: translate3d(0, 0, 0);

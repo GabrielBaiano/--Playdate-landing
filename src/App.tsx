@@ -102,7 +102,7 @@ function App() {
               {/* Carousel Row 1 - Scrolls Left */}
               <div className="carousel-row">
                 <div className="carousel-track scroll-left-track">
-                  {[...SEASON_ONE_ROW_1, ...SEASON_ONE_ROW_1].map((game, idx) => (
+                  {[...SEASON_ONE_ROW_1, ...SEASON_ONE_ROW_1, ...SEASON_ONE_ROW_1, ...SEASON_ONE_ROW_1].map((game, idx) => (
                     <div key={idx} className="carousel-game-card">
                       <img src={game.imageUrl} alt={game.title} />
                     </div>
@@ -113,7 +113,7 @@ function App() {
               {/* Carousel Row 2 - Scrolls Right */}
               <div className="carousel-row">
                 <div className="carousel-track scroll-right-track">
-                  {[...SEASON_ONE_ROW_2, ...SEASON_ONE_ROW_2].map((game, idx) => (
+                  {[...SEASON_ONE_ROW_2, ...SEASON_ONE_ROW_2, ...SEASON_ONE_ROW_2, ...SEASON_ONE_ROW_2].map((game, idx) => (
                     <div key={idx} className="carousel-game-card">
                       <img src={game.imageUrl} alt={game.title} />
                     </div>
@@ -124,7 +124,7 @@ function App() {
               {/* Carousel Row 3 - Scrolls Left */}
               <div className="carousel-row">
                 <div className="carousel-track scroll-left-track">
-                  {[...SEASON_ONE_ROW_3, ...SEASON_ONE_ROW_3].map((game, idx) => (
+                  {[...SEASON_ONE_ROW_3, ...SEASON_ONE_ROW_3, ...SEASON_ONE_ROW_3, ...SEASON_ONE_ROW_3].map((game, idx) => (
                     <div key={idx} className="carousel-game-card">
                       <img src={game.imageUrl} alt={game.title} />
                     </div>

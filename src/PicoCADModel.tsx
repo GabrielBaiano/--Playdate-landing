@@ -135,25 +135,10 @@ void main() {
         texColor = vidColor;
     }
     */
-    
-    vec3 normal = vNormal;
-    if (!gl_FrontFacing) normal = -normal;
-    
-    vec3 lightDir = normalize(vec3(-0.5, 0.5, 1.0));
-    float ndotl = dot(normal, lightDir);
-    
-    float checker = mod(floor(gl_FragCoord.x) + floor(gl_FragCoord.y), 2.0);
-    
-    float shadow = 1.0;
-    if (ndotl < 0.1) {
-        shadow = 0.65;
-    } else if (ndotl < 0.5) {
-        shadow = checker > 0.5 ? 1.0 : 0.65;
-    }
-    
-    gl_FragColor = vec4(texColor.rgb * shadow, 1.0);
+    // Set shader shadow multiplier to 1.0 to remove dithered shadows on 3D elements
+    gl_FragColor = vec4(texColor.rgb, 1.0);
 }
-`;
+`
 
 export default function PicoCADModel({ url, textureUrl, scale = 1, children, ...props }: any) {
     const [geometries, setGeometries] = useState<THREE.BufferGeometry[]>([]);
