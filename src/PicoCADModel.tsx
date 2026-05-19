@@ -591,7 +591,7 @@ export default function PicoCADModel({
                 currentTargetScale = THREE.MathUtils.lerp(currentTargetScale, scale * 0.75, easeSpecs);
 
                 // "Inclinação de 90 graus" e "incline um pouco mais pra camera"
-                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2 - Math.PI * 0.35, easeSpecs);
+                currentTargetRotY = THREE.MathUtils.lerp(currentTargetRotY, -Math.PI / 2 - Math.PI * 0.26, easeSpecs);
                 currentTargetRotX = THREE.MathUtils.lerp(currentTargetRotX, 0.30, easeSpecs); // Tilted more towards the camera
                 currentTargetRotZ = THREE.MathUtils.lerp(currentTargetRotZ, 0.0, easeSpecs); // Straight upright on Z
 
@@ -721,8 +721,8 @@ export default function PicoCADModel({
 
     // The absolute world coordinates of the crank attachment hinge point on the side
     const pivotX = -0.45;
-    const pivotY = 4.4;
-    const pivotZ = -7.25;
+    const pivotY = 5.2;
+    const pivotZ = -7.6;
 
     return (
         <group ref={groupRef} {...props}>
