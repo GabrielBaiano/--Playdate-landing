@@ -4,7 +4,7 @@
   --pd-yellow: #FFCC00;
   --pd-dark: #121620;
   --pd-white: #FFFFFF;
-  --bg-color: #0f172a;
+  --bg-color: #6a7882;
   --text-main: #f8fafc;
   --accent-yellow: #fbbf24;
   --accent-purple: #812ce5;
@@ -27,10 +27,11 @@ html {
 
 .hero-section,
 .white-section,
-.specs-section,
+.spec-slide,
 .orange-section {
   scroll-snap-align: start;
   scroll-snap-stop: always; /* Forces scroll wheel to halt at the section boundary */
+  border-bottom: 20px solid black;
 }
 
 body {
@@ -43,21 +44,7 @@ body {
   z-index: 1;
 }
 
-/* Brutalist Grid Overlay */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
-  pointer-events: none;
-  z-index: -1;
-}
+/* Removed Brutalist Grid Overlay as requested */
 
 .app-container {
   min-height: 100vh;
@@ -248,7 +235,7 @@ body::before {
 .white-section {
   position: relative;
   z-index: 5; /* Behind the 3D model */
-  background-color: #ffffff; /* Solid white background that acts as a curtain! */
+  background: radial-gradient(circle at center, #ffe066 0%, var(--pd-yellow) 100%); /* Solid yellow gradient background that acts as a curtain! */
   width: 100%;
   height: 100vh; /* Exactly 100vh full screen section that scrolls normally! */
   padding: 0;
@@ -533,12 +520,6 @@ body::before {
   height: 100vh;
   z-index: 2; /* Behind the white scrolling curtain (z-index: 5) */
   background-color: #1464c0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px),
-    linear-gradient(rgba(255, 255, 255, 0.40) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.40) 1px, transparent 1px);
-  background-size: 40px 40px, 40px 40px, 200px 200px, 200px 200px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.4s ease;
