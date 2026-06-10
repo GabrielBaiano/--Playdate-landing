@@ -30,8 +30,8 @@ html {
 .spec-slide,
 .orange-section {
   scroll-snap-align: start;
-  scroll-snap-stop: always; /* Forces scroll wheel to halt at the section boundary */
-  border-bottom: 20px solid black;
+  scroll-snap-stop: always;
+  /* Forces scroll wheel to halt at the section boundary */
 }
 
 body {
@@ -42,6 +42,11 @@ body {
   overflow-x: hidden;
   position: relative;
   z-index: 1;
+  transition: background-color 0.2s ease;
+}
+
+body.body-blue {
+  background-color: var(--bg-color);
 }
 
 /* Removed Brutalist Grid Overlay as requested */
@@ -106,9 +111,11 @@ body {
     opacity: 0;
     transform: translateY(-300px);
   }
+
   30% {
     opacity: 1;
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -150,7 +157,8 @@ body {
   font-weight: 800 !important;
   box-shadow: 4px 4px 0 var(--text-main);
   transition: transform 0.2s, box-shadow 0.2s !important;
-  border-radius: 0 !important; /* Brutalist shape */
+  border-radius: 0 !important;
+  /* Brutalist shape */
 }
 
 .btn-buy:hover {
@@ -165,7 +173,8 @@ body {
   font-weight: 700 !important;
   box-shadow: 4px 4px 0 var(--text-main);
   transition: transform 0.2s, box-shadow 0.2s !important;
-  border-radius: 0 !important; /* Brutalist shape */
+  border-radius: 0 !important;
+  /* Brutalist shape */
 }
 
 .btn-see-more:hover {
@@ -193,13 +202,12 @@ body {
   transform: translate(-50%, -50%);
   width: 700px;
   height: 700px;
-  background-image: conic-gradient(
-    rgba(34, 211, 238, 0.24) 25%, 
-    transparent 25% 50%, 
-    rgba(34, 211, 238, 0.24) 50% 75%, 
-    transparent 75%
-  );
-  background-size: 12px 12px; /* 6px pixel checkerboard dithering */
+  background-image: conic-gradient(rgba(34, 211, 238, 0.24) 25%,
+      transparent 25% 50%,
+      rgba(34, 211, 238, 0.24) 50% 75%,
+      transparent 75%);
+  background-size: 12px 12px;
+  /* 6px pixel checkerboard dithering */
   -webkit-mask-image: radial-gradient(circle, black 10%, transparent 70%);
   mask-image: radial-gradient(circle, black 10%, transparent 70%);
   pointer-events: none;
@@ -207,7 +215,8 @@ body {
 }
 
 .hero-3d {
-  position: fixed; /* Fixed to the viewport */
+  position: fixed;
+  /* Fixed to the viewport */
   top: 0;
   left: 0;
   width: 100vw;
@@ -215,8 +224,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10; /* Now ON TOP of yellow section */
-  pointer-events: none; /* Let clicks pass through */
+  z-index: 10;
+  /* Now ON TOP of yellow section */
+  pointer-events: none;
+  /* Let clicks pass through */
 }
 
 .canvas-container {
@@ -225,7 +236,8 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  pointer-events: none; /* Disable mouse interaction to prevent bugs */
+  pointer-events: none;
+  /* Disable mouse interaction to prevent bugs */
 }
 
 /* Canvas Container */
@@ -234,15 +246,34 @@ body {
 /* White Scroll Section */
 .white-section {
   position: relative;
-  z-index: 5; /* Behind the 3D model */
-  background: radial-gradient(circle at center, #ffe066 0%, var(--pd-yellow) 100%); /* Solid yellow gradient background that acts as a curtain! */
+  z-index: 5;
+  /* Behind the 3D model */
   width: 100%;
-  height: 100vh; /* Exactly 100vh full screen section that scrolls normally! */
+  height: 100vh;
+  /* Exactly 100vh full screen section that scrolls normally! */
   padding: 0;
+  transition: background-color 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.white-section.bg-white {
+  background-color: #ffffff;
+}
+
+.white-section.bg-blue {
+  background-color: var(--bg-color);
+}
+
+.white-section.bg-blue .catalog-description {
+  color: #ffffff;
+}
+
+.white-section.bg-blue .catalog-inline-link {
+  color: #ffffff;
 }
 
 .white-sticky-content {
-  position: relative; /* Normal relative positioning so it physically scrolls with the page! */
+  position: relative;
+  /* Normal relative positioning so it physically scrolls with the page! */
   width: 100%;
   height: 100vh;
   display: flex;
@@ -250,7 +281,8 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  pointer-events: none; /* Let scroll/clicks pass through */
+  pointer-events: none;
+  /* Let scroll/clicks pass through */
   padding: 2rem 0;
 }
 
@@ -262,7 +294,8 @@ body {
   margin: 0 auto 2.5rem auto;
   padding: 0 1.5rem;
   z-index: 105;
-  pointer-events: auto; /* Allow clicks on buttons/links */
+  pointer-events: auto;
+  /* Allow clicks on buttons/links */
   transition: all 0.3s ease;
 }
 
@@ -323,16 +356,17 @@ body {
   font-size: 1.25rem;
   text-decoration: none;
   padding: 0.55rem 1.4rem;
-  border-radius: 50px; /* Perfectly round pill shaped */
+  border-radius: 50px;
+  /* Perfectly round pill shaped */
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .catalog-btn-grab:hover {
   transform: scale(1.05);
   background-color: #1c1c1e;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
 .catalog-btn-grab:active {
@@ -349,10 +383,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.6rem;
-  width: 100vw; /* Stretch edge-to-edge across the screen */
+  width: 100vw;
+  /* Stretch edge-to-edge across the screen */
   max-width: none;
-  transform: none; /* Perfectly horizontal, flat */
-  pointer-events: auto; /* Allow hover and interactions */
+  transform: none;
+  /* Perfectly horizontal, flat */
+  pointer-events: auto;
+  /* Allow hover and interactions */
   z-index: 100;
 }
 
@@ -370,19 +407,22 @@ body {
 }
 
 .carousel-row:hover .carousel-track {
-  animation-play-state: paused; /* Pause on hover */
+  animation-play-state: paused;
+  /* Pause on hover */
 }
 
 .carousel-game-card {
-  width: 230px; /* Standard wide size */
-  height: 138px; /* 1.66 Playdate aspect ratio */
+  width: 345px;
+  /* Larger wide size */
+  height: 207px;
+  /* 1.66 Playdate aspect ratio */
   flex-shrink: 0;
   background-color: transparent;
   border: none;
   box-shadow: none;
   overflow: hidden;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .carousel-game-card:hover {
@@ -411,6 +451,7 @@ body {
   0% {
     transform: translate3d(0, 0, 0);
   }
+
   100% {
     transform: translate3d(calc(-25% - 0.4rem), 0, 0);
   }
@@ -420,6 +461,7 @@ body {
   0% {
     transform: translate3d(calc(-25% - 0.4rem), 0, 0);
   }
+
   100% {
     transform: translate3d(0, 0, 0);
   }
@@ -428,12 +470,16 @@ body {
 /* Orange Scroll Section */
 .orange-section {
   position: relative;
-  z-index: 5; /* Behind the 3D model so close-up is visible */
-  background-color: #ffffff; /* Clean white background, matching the catalog fold */
+  z-index: 5;
+  /* Behind the 3D model so close-up is visible */
+  background-color: var(--bg-color);
+  /* Clean white background, matching the catalog fold */
   width: 100%;
-  height: 200vh; /* Restore scroll space for final scale transition */
+  height: 200vh;
+  /* Restore scroll space for final scale transition */
   padding: 0;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.05); /* Softer drop shadow for white-on-white layout */
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05);
+  /* Softer drop shadow for white-on-white layout */
 }
 
 .yellow-container {
@@ -442,10 +488,12 @@ body {
   width: 100%;
   height: 100vh;
   display: flex;
-  justify-content: flex-end; /* Put content on the right */
+  justify-content: flex-end;
+  /* Put content on the right */
   align-items: center;
   padding-right: 5rem;
-  z-index: 20; /* Speech bubble on top of 3D model */
+  z-index: 20;
+  /* Speech bubble on top of 3D model */
 }
 
 
@@ -463,35 +511,35 @@ body {
     gap: 1rem;
     padding: 1rem;
   }
-  
+
   .nav-links {
     flex-wrap: wrap;
     justify-content: center;
     gap: 1rem;
   }
-  
+
   .hero-title {
     border: none;
     border-top: 4px solid var(--accent-cyan);
     border-bottom: 4px solid var(--accent-cyan);
     padding: 1rem 0;
   }
-  
+
   .catalog-info-container {
     max-width: 100%;
     margin-bottom: 1.5rem;
   }
-  
+
   .catalog-logo-badge {
     height: 70px;
     width: 160px;
   }
-  
+
   .catalog-description {
     font-size: 1.1rem;
     margin: 1rem auto;
   }
-  
+
   .catalog-btn-grab {
     font-size: 1.1rem;
     padding: 0.5rem 1.2rem;
@@ -505,7 +553,8 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 3; /* Behind blueprint-overlay (z-index: 4) */
+  z-index: 3;
+  /* Behind blueprint-overlay (z-index: 4) */
   background-color: #ffffff;
   pointer-events: none;
   opacity: 0;
@@ -518,8 +567,9 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 2; /* Behind the white scrolling curtain (z-index: 5) */
-  background-color: #1464c0;
+  z-index: 2;
+  /* Behind the white scrolling curtain (z-index: 5) */
+  background-color: var(--bg-color);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -547,20 +597,25 @@ body {
   width: 100%;
   height: 100vh;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   overflow: hidden;
-  padding-left: 8%;
+  padding: 0 4%;
 }
 
 .specs-container {
   width: 100%;
-  max-width: 580px; /* Leave the right side completely clear for the 3D Playdate model! */
+  max-width: 1750px;
+  /* Leaves the center clear for the 3D Playdate model! */
   z-index: 10;
   text-align: left;
+  position: relative;
 }
 
 .specs-title {
+  position: absolute;
+  top: -150px;
+  left: 0;
   font-family: var(--font-main);
   font-size: 4.8rem;
   font-weight: 800;
@@ -570,16 +625,17 @@ body {
 }
 
 .specs-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.2rem;
+  display: flex;
+  justify-content: space-between;
   width: 100%;
+  margin-top: 50px;
 }
 
 .specs-column {
   display: flex;
   flex-direction: column;
   gap: 1.8rem;
+  width: 380px;
 }
 
 .specs-item {
@@ -592,7 +648,7 @@ body {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   text-transform: uppercase;
-  color: #8a8f98;
+  color: rgba(255, 255, 255, 0.7);
   letter-spacing: 1px;
 }
 

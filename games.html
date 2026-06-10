@@ -613,6 +613,27 @@
     }
 }
 
+body, body.nojs, html, #main, .container, main[role="main"] {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    transition: background-color 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+body.scrolled-blue, body.scrolled-blue html, body.scrolled-blue #main, body.scrolled-blue .container, body.scrolled-blue main[role="main"] {
+    background-color: #1464c0 !important;
+    background: #1464c0 !important;
+    color: #ffffff !important;
+}
+
+body.scrolled-blue .groupHeader, body.scrolled-blue .cardTrayContainer, body.scrolled-blue #navbar {
+    background-color: #1464c0 !important;
+    background: #1464c0 !important;
+}
+
+body.scrolled-blue a, body.scrolled-blue p, body.scrolled-blue h1, body.scrolled-blue h2, body.scrolled-blue h3, body.scrolled-blue span, body.scrolled-blue li {
+    color: #ffffff !important;
+}
     </style>
 
 
@@ -2894,6 +2915,14 @@
             searchField.addEventListener('focus', searchShow);
             searchField.addEventListener('blur', searchHide);
         }
+
+        window.addEventListener('scroll', function() {
+            if (window.scrollY >= 300) {
+                document.body.classList.add('scrolled-blue');
+            } else {
+                document.body.classList.remove('scrolled-blue');
+            }
+        });
     </script>
 
 

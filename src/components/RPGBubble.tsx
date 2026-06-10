@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './RPGBubble.css';
 
 interface RPGBubbleProps {
@@ -13,15 +13,12 @@ interface RPGBubbleProps {
 export function RPGBubble({ text, speed = 40, direction = 'left', className = '', width = '450px', visible = true }: RPGBubbleProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [hasTriggered, setHasTriggered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (visible) {
-      setHasTriggered(true);
       setIsTyping(true);
     } else {
-      setHasTriggered(false);
       setIsTyping(false);
       setDisplayedText('');
     }
