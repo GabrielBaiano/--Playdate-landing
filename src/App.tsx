@@ -386,8 +386,8 @@ function App() {
                 <pointLight position={[10, 10, 10]} intensity={1.0} />
                 <group position={[0, -5.5, 0]}>
                   <PicoCADModel
-                    url="/playdate.txt"
-                    textureUrl="/playdate.png"
+                    url="./playdate.txt"
+                    textureUrl="./playdate.png"
                     scale={1.22}
                     stage={stage}
                     specStage={specStage}
