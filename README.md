@@ -2,6 +2,8 @@
 
 Welcome to the official showcase site for the **Playdate Retro Mascot**, an interactive service built specifically for **Retrocon 2026** in Brazil!
 
+Live Demo: [playdate-picad.vercel.app](https://playdate-picad.vercel.app/)
+
 ---
 
 ## About Retrocon 2026
