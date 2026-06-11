@@ -438,11 +438,11 @@ const drawFace = (ctx: CanvasRenderingContext2D, faceType: 'surprised' | 'happy'
 const drawStatic = (ctx: CanvasRenderingContext2D, time: number) => {
     const width = 400;
     const height = 240;
-    
+
     // Multi-stage CRT distortion & flickering
     const seed = Math.floor(time * 60); // 60fps seed
     const flickerVal = Math.sin(time * 75);
-    
+
     if (flickerVal > 0.88) {
         // Black screen (sync loss)
         ctx.fillStyle = "#1b1f1a";
@@ -454,7 +454,7 @@ const drawStatic = (ctx: CanvasRenderingContext2D, time: number) => {
         ctx.fillRect(0, 0, width, height);
         return;
     }
-    
+
     // Draw 1-bit retro static noise
     const imgData = ctx.createImageData(width, height);
     const data = imgData.data;
@@ -470,13 +470,13 @@ const drawStatic = (ctx: CanvasRenderingContext2D, time: number) => {
     // Glitch horizontal bands
     ctx.strokeStyle = "#1b1f1a";
     ctx.fillStyle = "#1b1f1a";
-    
+
     // Large static bar rolling down
     const barY = Math.floor((time * 180) % (height + 40)) - 20;
     if (barY >= 0 && barY < height) {
         ctx.fillRect(0, barY, width, 16);
     }
-    
+
     // Tiny flickering horizontal lines
     ctx.lineWidth = 3;
     for (let i = 0; i < 6; i++) {
@@ -1035,7 +1035,7 @@ export default function PicoCADModel({
         <group ref={groupRef} {...props}>
             <group ref={rotationGroupRef}>
                 {/* Front Cover */}
-                 <group ref={frontRef}>
+                <group ref={frontRef}>
                     {front && <mesh geometry={front} material={material} />}
                     {showArrows && (
                         <>
@@ -1043,15 +1043,15 @@ export default function PicoCADModel({
                         </>
                     )}
                     {stage === 'orange' && showVideo && (
-                        <Html transform position={[0.4, 8.02, 0.08]} rotation={[0, Math.PI / 2, 0]} scale={1.23}>
-                            <div style={{ width: '400px', height: '240px', background: '#b5c2a3', overflow: 'hidden' }}>
-                                <iframe 
-                                    width="400" 
-                                    height="240" 
-                                    src="https://www.youtube.com/embed/HdF3CnFvxg4?autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=HdF3CnFvxg4" 
-                                    title="YouTube video player" 
-                                    frameBorder="0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        <Html transform position={[0.39, 8.015, 0.634]} rotation={[0, Math.PI / 2, 0]} scale={1.20}>
+                            <div style={{ width: '356px', height: '240px', background: '#b5c2a3', overflow: 'hidden' }}>
+                                <iframe
+                                    width="356"
+                                    height="240"
+                                    src="https://www.youtube.com/embed/HdF3CnFvxg4?autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=HdF3CnFvxg4"
+                                    title="YouTube video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen>
                                 </iframe>
                             </div>
